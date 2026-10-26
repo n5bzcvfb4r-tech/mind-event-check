@@ -1,0 +1,34 @@
+{
+  "name": "InvoiceUnpaid",
+  "event_code": "EVT-010",
+  "event_type": "invoice.unpaid",
+  "topic": "facturacion.facturas.impagada.v1",
+  "version": 1,
+  "description": "FIXTURE INVALIDO usado por tests/invoice-unpaid-contract.test.js. Es una copia de sources/events/invoice_unpaid.json contaminada con datos de pago (payment_transaction_id y last_four_digits), por lo que viola AC-EST-09 (REQ-119), que fija exactamente seis campos de negocio y prohibe cualquier dato de pago en el payload. Estructuralmente sigue siendo una definicion de evento valida contra .config/schemas/event-definition.schema.json: el esquema generico NO detecta estos campos, quien los rechaza es el contrato especifico de AC-EST-09. NO debe colocarse en sources/events/.",
+  "envelope_schema": "sources/schemas/common/event_envelope.avsc",
+  "payload_schema": "sources/schemas/invoice_unpaid.avsc",
+  "producer": "ARC-031",
+  "consumers": ["ARC-024"],
+  "idempotency_key": ["invoice_id"],
+  "delivery": {
+    "retries": 3,
+    "backoff": { "strategy": "exponential", "intervals_seconds": [1, 2, 4] },
+    "timeout_s": 5
+  },
+  "payload": {
+    "required_fields": [
+      "event_id",
+      "event_type",
+      "timestamp",
+      "correlation_id",
+      "invoice_id",
+      "invoice_number",
+      "user_id",
+      "amount_cents",
+      "due_date",
+      "modality_code",
+      "payment_transaction_id"
+    ],
+    "optional_fields": ["last_four_digits"]
+  }
+}
