@@ -1,0 +1,34 @@
+{
+  "name": "SubscriptionCancelled",
+  "event_code": "EVT-011",
+  "event_type": "subscription.cancelled",
+  "topic": "suscripciones.bajas.confirmada.v1",
+  "version": 1,
+  "description": "Se publica cuando se confirma la baja de la suscripción (REQ-101): subscription_status pasa a CANCELLED, se registra cancelled_at y cesan las renovaciones. Lo produce ARC-031 desde el outbox transaccional event_outbox tras el commit de la baja y lo consume ARC-033 (Cobros y recobro) para cerrar el ciclo de impago abierto con close_reason USER_CANCELLED (AC-BAJ-06). Si falla la publicación se reintenta desde event_outbox y la baja NO se revierte.",
+  "envelope_schema": "sources/schemas/common/event_envelope.avsc",
+  "payload_schema": "sources/schemas/subscription_cancelled.avsc",
+  "producer": "ARC-031",
+  "consumers": ["ARC-033"],
+  "publish_after_commit": true,
+  "idempotency_key": ["cancellation_id"],
+  "delivery": {
+    "retries": 3,
+    "backoff": { "strategy": "exponential", "intervals_seconds": [1, 2, 4] },
+    "timeout_s": 5
+  },
+  "payload": {
+    "required_fields": [
+      "event_id",
+      "event_type",
+      "timestamp",
+      "correlation_id",
+      "subscription_id",
+      "user_id",
+      "subscription_status",
+      "cancelled_at",
+      "cancellation_id",
+      "close_reason"
+    ],
+    "optional_fields": ["billing_period_start"]
+  }
+}

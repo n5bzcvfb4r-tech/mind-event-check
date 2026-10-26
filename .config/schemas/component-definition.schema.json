@@ -130,6 +130,45 @@
             "description": "Número máximo de eventos de este tipo que el componente publica por factura. RN REQ-119: por cada factura se publica como máximo un evento InvoiceUnpaid.",
             "minimum": 1
           },
+          "component": {
+            "type": "string",
+            "description": "Componente concreto (ARC-xxx) que ejecuta esta operación sobre el canal, cuando el fichero describe el mapa pub/sub completo de un canal y reúne productor y consumidor en un mismo documento. Ejemplo: ARC-031 publica SubscriptionCancelled y ARC-033 lo consume.",
+            "pattern": "^ARC-[0-9]{3}$"
+          },
+          "publish_after_commit": {
+            "type": "boolean",
+            "description": "Si es true, el evento solo se publica TRAS el commit de la transacción que lo origina (patrón outbox transaccional). AC-BAJ-06: SubscriptionCancelled se publica después de confirmar la baja, nunca dentro de la transacción."
+          },
+          "outbox": {
+            "type": "object",
+            "description": "Publicación mediante outbox transaccional: tabla de la que se lee el evento y política ante un fallo de publicación.",
+            "additionalProperties": false,
+            "required": [
+              "table",
+              "retry_from_outbox",
+              "rollback_on_publish_failure"
+            ],
+            "properties": {
+              "table": {
+                "type": "string",
+                "description": "Tabla de outbox transaccional desde la que se publica el evento. T.5: event_outbox.",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "retry_from_outbox": {
+                "type": "boolean",
+                "description": "Si es true, cuando la publicación falla el evento se reintenta desde el outbox hasta entregarse."
+              },
+              "rollback_on_publish_failure": {
+                "type": "boolean",
+                "description": "AC-BAJ-06: con false, un fallo de publicación NO revierte la operación de negocio ya confirmada (la baja permanece registrada y solo se reintenta el envío)."
+              }
+            }
+          },
+          "close_reason": {
+            "type": "string",
+            "description": "Motivo de cierre que el consumidor aplica al recibir el evento (dunning_cycles.close_reason). REQ-126: USER_CANCELLED es el motivo que impide abrir caso de aviso.",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          },
           "idempotency_key": {
             "type": "array",
             "description": "Campos del payload que forman la clave de idempotencia de la ENTREGA en este consumidor: dos entregas con la misma combinación de valores son el mismo hecho de negocio y no producen un segundo efecto.",
