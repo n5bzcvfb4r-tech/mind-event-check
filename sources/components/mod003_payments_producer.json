@@ -1,7 +1,7 @@
 {
   "component": "ARC-033",
   "name": "mod003-pagos-productor",
-  "description": "MOD-003 (módulo de pagos): único productor de los eventos de resultado de cobro — PaymentAuthorized, PaymentFailed y PaymentProcessed — que consume MOD-002 (facturación) para emitir la factura o registrar el impago (REQ-038 y REQ-049).",
+  "description": "MOD-003 (módulo de pagos): único productor de los eventos de resultado de cobro — PaymentAuthorized, PaymentFailed, PaymentProcessed y PaymentRecovered — que consume MOD-002 (facturación) para emitir la factura, registrar el impago o dejar la factura UNPAID en PAID con paid_late al cerrarse el recobro (REQ-038, REQ-049 y REQ-118).",
   "channel": "pagos.cobros.procesado.v1",
   "role": "producer",
   "delivery": {
@@ -34,6 +34,12 @@
         "escalation_target": "ADMIN",
         "persist_until_delivered": true
       }
+    },
+    {
+      "event_code": "EVT-014",
+      "name": "PaymentRecovered",
+      "topic": "pagos.cobros.recuperado.v1",
+      "operation": "publish"
     }
   ],
   "owner": { "team": "ARC-023", "contact": "arquitectura.eventos@mapfre.com" },
