@@ -89,6 +89,42 @@
             "type": "integer",
             "description": "Número máximo de eventos de este tipo que el componente publica por factura. RN REQ-119: por cada factura se publica como máximo un evento InvoiceUnpaid.",
             "minimum": 1
+          },
+          "idempotency_key": {
+            "type": "array",
+            "description": "Campos del payload que forman la clave de idempotencia de la ENTREGA en este consumidor: dos entregas con la misma combinación de valores son el mismo hecho de negocio y no producen un segundo efecto.",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$"
+            }
+          },
+          "trigger_source": {
+            "type": "string",
+            "description": "Origen que queda registrado en el caso abierto por esta suscripción. Valores del enum físico de T.5 payment_reminder_cases.trigger_source.",
+            "enum": [
+              "DETECTOR",
+              "INVOICE_UNPAID"
+            ]
+          },
+          "on_first_delivery": {
+            "type": "string",
+            "description": "Efecto de la PRIMERA entrega sobre una factura sin caso (AC-IMP-04): abre el caso de aviso.",
+            "enum": [
+              "open_case"
+            ]
+          },
+          "on_duplicate": {
+            "type": "string",
+            "description": "Efecto de una entrega repetida sobre una factura que ya tiene caso OPEN (AC-IMP-04): el evento se anota y los hitos NO se replanifican. Única semántica declarada por arquitectura.",
+            "enum": [
+              "annotate_only"
+            ]
+          },
+          "receives_payment_data": {
+            "type": "boolean",
+            "description": "Declara si el componente recibe datos de pago en el payload de este evento. En InvoiceUnpaid es false por AC-EST-04 / AC-EST-09: el esquema no los tiene."
           }
         }
       }

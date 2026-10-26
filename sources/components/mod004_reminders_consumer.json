@@ -1,0 +1,24 @@
+{
+  "component": "ARC-036",
+  "name": "avisos-impago",
+  "description": "Módulo de avisos de impago (MOD-004): se suscribe a InvoiceUnpaid (EVT-010, REQ-119) para abrir el caso de aviso en payment_reminder_cases con trigger_source INVOICE_UNPAID. La entrega es idempotente por invoice_id: una segunda entrega sobre una factura que ya tiene caso OPEN solo se anota y no replanifica los hitos (AC-IMP-04). No recibe datos de pago.",
+  "channel": "facturacion.facturas.impagada.v1",
+  "role": "consumer",
+  "events": [
+    {
+      "event_code": "EVT-010",
+      "name": "InvoiceUnpaid",
+      "topic": "facturacion.facturas.impagada.v1",
+      "operation": "subscribe",
+      "idempotency_key": ["invoice_id"],
+      "trigger_source": "INVOICE_UNPAID",
+      "on_first_delivery": "open_case",
+      "on_duplicate": "annotate_only",
+      "receives_payment_data": false
+    }
+  ],
+  "owner": { "team": "ARC-023", "contact": "arquitectura.eventos@mapfre.com" },
+  "payload_constraints": {
+    "forbidden_field_names": ["pan", "card_number", "cvv", "cvc", "token", "card_token", "access_token", "iban", "bank_account_number"]
+  }
+}
