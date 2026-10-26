@@ -1,0 +1,62 @@
+{
+  "type": "record",
+  "name": "PaymentProcessed",
+  "namespace": "com.mapfre.gymusers.events.pagos",
+  "doc": "Payload del evento PaymentProcessed (EVT-005) que materializa REQ-038. Los cuatro primeros campos (event_id, event_type, timestamp, correlation_id) son el sobre canónico definido en sources/schemas/common/event_envelope.avsc.",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "UUID que identifica de forma única el evento de dominio emitido (RN REQ-049). Obligatorio."
+    },
+    {
+      "name": "event_type",
+      "type": "string",
+      "doc": "Nombre canónico del tipo de evento en minúsculas y puntos, p. ej. payment.processed. Obligatorio."
+    },
+    {
+      "name": "timestamp",
+      "type": "string",
+      "doc": "Instante de emisión del evento en ISO-8601 UTC con sufijo Z, p. ej. 2026-10-26T10:35:00.000Z. Cubre el campo timestamp ISO-8601 que exige REQ-038. Obligatorio."
+    },
+    {
+      "name": "correlation_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "UUID de correlación propagado a reintentos, ledger y reembolsos. Obligatorio."
+    },
+    {
+      "name": "payment_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "Identificador del pago comunicado a facturación (REQ-038). Obligatorio."
+    },
+    {
+      "name": "user_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "Usuario asociado al evento. Obligatorio."
+    },
+    {
+      "name": "subscription_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "Suscripción asociada al evento. Obligatorio."
+    },
+    {
+      "name": "status",
+      "type": {
+        "type": "enum",
+        "name": "PaymentProcessedStatus",
+        "symbols": ["AUTHORIZED", "REJECTED"]
+      },
+      "doc": "Resultado del cobro comunicado a MOD-002: AUTHORIZED genera factura y REJECTED registra impago (REQ-038)."
+    },
+    {
+      "name": "amount",
+      "type": "string",
+      "doc": "Importe decimal en notación de punto fijo con dos decimales, p. ej. \"45.00\". Se transporta como cadena para no perder precisión; PROHIBIDO float en importes."
+    },
+    {
+      "name": "currency",
+      "type": "string",
+      "doc": "Divisa ISO-4217 de exactamente 3 caracteres, EUR."
+    }
+  ]
+}
