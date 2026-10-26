@@ -1,0 +1,58 @@
+{
+  "type": "record",
+  "name": "InvoiceUnpaid",
+  "namespace": "com.mapfre.gymusers.events.facturacion",
+  "doc": "Payload del evento InvoiceUnpaid (EVT-010) que materializa REQ-119. Los cuatro primeros campos (event_id, event_type, timestamp, correlation_id) son el sobre canónico definido en sources/schemas/common/event_envelope.avsc; el campo timestamp del sobre transporta el instante invoices.unpaid_at de la declaración de impago. Por AC-EST-09 el payload de negocio contiene EXACTAMENTE seis campos y NINGÚN dato de pago: ni payment_transaction_id, ni last_four_digits, ni método de pago, ni PAN, token o IBAN.",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "UUID que identifica de forma única el evento de dominio emitido (RN REQ-049). Obligatorio."
+    },
+    {
+      "name": "event_type",
+      "type": "string",
+      "doc": "Tipo canónico del evento. Valor fijo: invoice.unpaid. Obligatorio."
+    },
+    {
+      "name": "timestamp",
+      "type": "string",
+      "doc": "Instante de la declaración de impago (invoices.unpaid_at) en ISO-8601 UTC con sufijo Z. Obligatorio."
+    },
+    {
+      "name": "correlation_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "UUID de correlación del impago, propagado a los avisos y al expediente de la factura. Obligatorio."
+    },
+    {
+      "name": "invoice_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "Factura declarada impagada (invoices.invoice_id). Sin factura emparejable se abre una excepción para ADMIN (RN REQ-119)."
+    },
+    {
+      "name": "invoice_number",
+      "type": "string",
+      "doc": "Número de la factura impagada, formato GU-{AAAA}-{NNNNNN} (invoices.invoice_number)."
+    },
+    {
+      "name": "user_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "Socio destinatario de los avisos de impago."
+    },
+    {
+      "name": "amount_cents",
+      "type": "int",
+      "doc": "Importe impagado en céntimos (invoices.total_amount_cents). Nombre físico de T.5: amount_cents."
+    },
+    {
+      "name": "due_date",
+      "type": "string",
+      "doc": "Fecha de vencimiento de la factura, ISO-8601 `YYYY-MM-DD` (invoices.due_date)."
+    },
+    {
+      "name": "modality_code",
+      "type": "string",
+      "doc": "Modalidad congelada en la factura (invoices.modality_code), leída del catálogo cat_subscription_plans."
+    }
+  ]
+}

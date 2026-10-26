@@ -1,0 +1,39 @@
+{
+  "name": "InvoiceIssued",
+  "event_code": "EVT-002",
+  "event_type": "invoice.issued",
+  "topic": "facturacion.facturas.emitida.v1",
+  "version": 1,
+  "description": "Se emite cuando se confirma el alta del socio y se emite su primera factura (REQ-113). La factura nace en estado PENDING_PAYMENT con generation_source SIGNUP y el evento solo se publica TRAS el commit de la emisión de la factura. Lo consume el módulo de pagos para solicitar el cobro.",
+  "envelope_schema": "sources/schemas/common/event_envelope.avsc",
+  "payload_schema": "sources/schemas/invoice_issued.avsc",
+  "producer": "ARC-031",
+  "consumers": ["ARC-024"],
+  "publish_after_commit": true,
+  "idempotency_key": ["subscription_id", "service_period_start"],
+  "delivery": {
+    "retries": 3,
+    "backoff": { "strategy": "exponential", "intervals_seconds": [1, 2, 4] },
+    "timeout_s": 5
+  },
+  "payload": {
+    "required_fields": [
+      "event_id",
+      "event_type",
+      "timestamp",
+      "correlation_id",
+      "invoice_id",
+      "invoice_number",
+      "subscription_id",
+      "user_id",
+      "service_period_start",
+      "service_period_end",
+      "amount_cents",
+      "currency",
+      "concept",
+      "generation_source",
+      "invoice_status"
+    ],
+    "optional_fields": []
+  }
+}

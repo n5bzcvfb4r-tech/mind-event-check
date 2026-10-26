@@ -84,6 +84,11 @@
               "publish",
               "subscribe"
             ]
+          },
+          "max_events_per_invoice": {
+            "type": "integer",
+            "description": "Número máximo de eventos de este tipo que el componente publica por factura. RN REQ-119: por cada factura se publica como máximo un evento InvoiceUnpaid.",
+            "minimum": 1
           }
         }
       }
