@@ -1,0 +1,30 @@
+{
+  "name": "RefundFailed",
+  "event_code": "EVT-013",
+  "event_type": "refund.failed",
+  "topic": "pagos.reembolsos.fallido.v1",
+  "version": 1,
+  "description": "Se emite cuando una orden de refund_requests alcanza FAILED; notifica a MOD-002 el estado final del reembolso con su código canónico de fallo y un mensaje saneado (REQ-089 RN 9).",
+  "envelope_schema": "sources/schemas/common/event_envelope.avsc",
+  "payload_schema": "sources/schemas/refund_failed.avsc",
+  "producer": "ARC-034",
+  "consumers": ["ARC-024"],
+  "delivery": {
+    "retries": 3,
+    "backoff": { "strategy": "exponential", "intervals_seconds": [1, 2, 4] },
+    "timeout_s": 5
+  },
+  "payload": {
+    "required_fields": [
+      "event_id",
+      "event_type",
+      "timestamp",
+      "correlation_id",
+      "refund_request_id",
+      "cancellation_id",
+      "failure_code",
+      "failure_message"
+    ],
+    "optional_fields": []
+  }
+}

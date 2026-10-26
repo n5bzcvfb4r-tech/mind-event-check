@@ -1,0 +1,25 @@
+{
+  "component": "ARC-034",
+  "name": "modulo-reembolsos",
+  "description": "Módulo de reembolsos (MOD-003): único productor de los eventos de resultado de reembolso. Publica RefundCompleted y RefundFailed para que facturación (MOD-002) cierre la baja. La orden es idempotente por cancellation_id (AC-REE-02).",
+  "channel": "pagos.reembolsos.completado.v1",
+  "role": "producer",
+  "events": [
+    {
+      "event_code": "EVT-012",
+      "name": "RefundCompleted",
+      "topic": "pagos.reembolsos.completado.v1",
+      "operation": "publish"
+    },
+    {
+      "event_code": "EVT-013",
+      "name": "RefundFailed",
+      "topic": "pagos.reembolsos.fallido.v1",
+      "operation": "publish"
+    }
+  ],
+  "owner": { "team": "ARC-023", "contact": "arquitectura.eventos@mapfre.com" },
+  "payload_constraints": {
+    "forbidden_field_names": ["pan", "card_number", "cvv", "cvc", "token", "card_token", "access_token", "iban", "bank_account_number"]
+  }
+}
