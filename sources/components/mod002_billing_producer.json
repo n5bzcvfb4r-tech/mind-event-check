@@ -1,0 +1,26 @@
+{
+  "component": "ARC-031",
+  "name": "modulo-facturacion",
+  "description": "Módulo de facturación (MOD-002): único productor de InvoiceIssued, publicado tras el commit de la emisión de la factura (REQ-113), y de InvoiceUnpaid, declaración de impago sin datos de pago (REQ-119).",
+  "channel": "facturacion.facturas.emitida.v1",
+  "role": "producer",
+  "events": [
+    {
+      "event_code": "EVT-002",
+      "name": "InvoiceIssued",
+      "topic": "facturacion.facturas.emitida.v1",
+      "operation": "publish"
+    },
+    {
+      "event_code": "EVT-010",
+      "name": "InvoiceUnpaid",
+      "topic": "facturacion.facturas.impagada.v1",
+      "operation": "publish",
+      "max_events_per_invoice": 1
+    }
+  ],
+  "owner": { "team": "ARC-023", "contact": "arquitectura.eventos@mapfre.com" },
+  "payload_constraints": {
+    "forbidden_field_names": ["pan", "card_number", "cvv", "cvc", "token", "card_token", "access_token", "iban", "bank_account_number"]
+  }
+}

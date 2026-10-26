@@ -17,11 +17,26 @@ function readJson(relPath) {
 /** Campos del sobre canónico que deben sobrevivir al round-trip Avro. */
 const ENVELOPE_FIELDS = ['event_id', 'event_type', 'timestamp', 'correlation_id'];
 
-const EVENT_FILES = globSync('sources/events/*.json', { cwd: ROOT }).sort();
+/**
+ * Definiciones de evento de las que TSK-009 es dueña (los tres canales
+ * gymusers.payments.*.v1). Las definiciones de otras tareas (facturación, …)
+ * declaran su propio contrato y tienen su propio test: este no las invade.
+ */
+const OWNED_EVENTS = [
+  'sources/events/payment_authorized.json',
+  'sources/events/payment_failed.json',
+  'sources/events/payment_processed.json',
+];
 
-test('el glob sources/events/*.json encuentra todas las definiciones de evento', () => {
-  assert.ok(
-    EVENT_FILES.length >= 3,
+const EVENT_FILES = globSync('sources/events/*.json', { cwd: ROOT })
+  .map((file) => file.split(path.sep).join('/'))
+  .filter((file) => OWNED_EVENTS.includes(file))
+  .sort();
+
+test('el glob encuentra las tres definiciones de evento de resultado de cobro', () => {
+  assert.deepEqual(
+    EVENT_FILES,
+    OWNED_EVENTS,
     'glob vacío o incompleto: el test de publish de contrato sería vacuamente verde',
   );
 });

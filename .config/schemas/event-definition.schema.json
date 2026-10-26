@@ -74,6 +74,20 @@
       "type": "string",
       "description": "Descripción funcional opcional del evento."
     },
+    "publish_after_commit": {
+      "type": "boolean",
+      "description": "Si es true, el evento solo se publica TRAS el commit de la transacción que lo origina (patrón outbox transaccional). RN REQ-113: InvoiceIssued solo se publica tras el commit de la emisión de la factura."
+    },
+    "idempotency_key": {
+      "type": "array",
+      "description": "Campos del payload que forman la clave de idempotencia del evento: dos publicaciones con la misma combinación de valores son el mismo hecho de negocio y no se duplican. Cada elemento debe ser un campo declarado en payload.required_fields.",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]*$"
+      }
+    },
     "delivery": {
       "type": "object",
       "description": "Política de entrega del evento: reintentos, backoff y timeout.",

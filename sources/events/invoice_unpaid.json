@@ -1,0 +1,33 @@
+{
+  "name": "InvoiceUnpaid",
+  "event_code": "EVT-010",
+  "event_type": "invoice.unpaid",
+  "topic": "facturacion.facturas.impagada.v1",
+  "version": 1,
+  "description": "Se publica cuando MOD-003 informa de que la cuota queda UNPAID con close_reason EXHAUSTED y la factura pasa a UNPAID con unpaid_at (REQ-119). Por cada factura se publica como máximo UN evento (unicidad por invoice_id) y el payload no contiene ningún dato de pago. Lo consume el módulo de notificaciones para disparar los avisos de email y SMS.",
+  "envelope_schema": "sources/schemas/common/event_envelope.avsc",
+  "payload_schema": "sources/schemas/invoice_unpaid.avsc",
+  "producer": "ARC-031",
+  "consumers": ["ARC-024"],
+  "idempotency_key": ["invoice_id"],
+  "delivery": {
+    "retries": 3,
+    "backoff": { "strategy": "exponential", "intervals_seconds": [1, 2, 4] },
+    "timeout_s": 5
+  },
+  "payload": {
+    "required_fields": [
+      "event_id",
+      "event_type",
+      "timestamp",
+      "correlation_id",
+      "invoice_id",
+      "invoice_number",
+      "user_id",
+      "amount_cents",
+      "due_date",
+      "modality_code"
+    ],
+    "optional_fields": []
+  }
+}

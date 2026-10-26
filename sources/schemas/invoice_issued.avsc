@@ -1,0 +1,91 @@
+{
+  "type": "record",
+  "name": "InvoiceIssued",
+  "namespace": "com.mapfre.gymusers.events.facturacion",
+  "doc": "Payload del evento InvoiceIssued (EVT-002) que materializa REQ-113. Los cuatro primeros campos (event_id, event_type, timestamp, correlation_id) son el sobre canónico definido en sources/schemas/common/event_envelope.avsc. El evento solo se publica TRAS el commit de la emisión de la factura (RN REQ-113).",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "UUID que identifica de forma única el evento de dominio emitido (RN REQ-049). Obligatorio."
+    },
+    {
+      "name": "event_type",
+      "type": "string",
+      "doc": "Tipo canónico del evento. Valor fijo: invoice.issued. Obligatorio."
+    },
+    {
+      "name": "timestamp",
+      "type": "string",
+      "doc": "Instante de emisión del evento en ISO-8601 UTC con sufijo Z. Obligatorio."
+    },
+    {
+      "name": "correlation_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "UUID de correlación de la emisión, propagado al cobro, al ledger y a los avisos. Obligatorio."
+    },
+    {
+      "name": "invoice_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "Factura emitida (invoices.invoice_id). Clave de idempotencia del cobro."
+    },
+    {
+      "name": "invoice_number",
+      "type": "string",
+      "doc": "Número correlativo e inmutable de la serie anual, formato GU-{AAAA}-{NNNNNN} (invoices.invoice_number)."
+    },
+    {
+      "name": "subscription_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "Suscripción facturada. Junto con service_period_start forma la clave de idempotencia de la emisión (RN REQ-113)."
+    },
+    {
+      "name": "user_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "Socio receptor de la factura."
+    },
+    {
+      "name": "service_period_start",
+      "type": "string",
+      "doc": "Inicio del periodo de servicio facturado, ISO-8601 `YYYY-MM-DD`. Junto con subscription_id forma la clave de idempotencia de la emisión (RN REQ-113)."
+    },
+    {
+      "name": "service_period_end",
+      "type": "string",
+      "doc": "Fin del periodo de servicio facturado, ISO-8601 `YYYY-MM-DD`."
+    },
+    {
+      "name": "amount_cents",
+      "type": "int",
+      "doc": "Importe total de la factura en céntimos (invoices.total_amount_cents). Procede siempre del catálogo de modalidades; no lo fija el usuario (RN REQ-113)."
+    },
+    {
+      "name": "currency",
+      "type": "string",
+      "doc": "Divisa ISO-4217 de 3 caracteres, EUR."
+    },
+    {
+      "name": "concept",
+      "type": "string",
+      "doc": "Concepto congelado en la factura: «Cuota GymUsers [modalidad]» (invoices.concept)."
+    },
+    {
+      "name": "generation_source",
+      "type": {
+        "type": "enum",
+        "name": "InvoiceGenerationSource",
+        "symbols": ["SIGNUP", "RENEWAL"]
+      },
+      "doc": "Origen de la emisión: SIGNUP en el alta (REQ-113), RENEWAL en la renovación periódica."
+    },
+    {
+      "name": "invoice_status",
+      "type": {
+        "type": "enum",
+        "name": "InvoiceStatus",
+        "symbols": ["PENDING_PAYMENT", "PAID", "UNPAID", "CANCELLED"]
+      },
+      "doc": "Estado de cobro de la factura (invoices.invoice_status). Nace en PENDING_PAYMENT (RN REQ-113)."
+    }
+  ]
+}
