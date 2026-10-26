@@ -156,6 +156,16 @@ channels:
       operationId: EVT-014
     subscribe:
       message: *id014
+  gymusers.profile.updated.v1:
+    description: 'ProfileUpdated · productor: ARC-030 → consumidores: ARC-036, ARC-031'
+    x-mind-transport: internal
+    x-mind-audience: internal
+    publish:
+      message: &id015
+        $ref: '#/components/messages/ProfileUpdated'
+      operationId: EVT-015
+    subscribe:
+      message: *id015
 components:
   messages:
     BankStatementDeposited:
@@ -225,6 +235,13 @@ components:
         type: object
         description: Payload de PaymentRecovered
         x-mind-placeholder: true
+    ProfileUpdated:
+      name: ProfileUpdated
+      summary: user_id y los campos editables del perfil (first_name, last_name, age,
+        address, email, phone) mas updated_at; sin nick (inmutable) ni password_hash
+      payload:
+        type: object
+        description: Payload de ProfileUpdated
     RefundCompleted:
       name: RefundCompleted
       summary: refund_request_id, cancellation_id, original_transaction_id, refund_ledger_id,
