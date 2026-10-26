@@ -1,0 +1,247 @@
+asyncapi: 2.6.0
+info:
+  title: mind-event-check — Eventos
+  version: 0.1.0
+  description: 'Catálogo de eventos generado por MIND desde T.3 (PR #0). Los canales
+    con x-mind-audience: client son el contrato cliente↔servidor en tiempo real; los
+    payloads marcados x-mind-placeholder los completa la construcción.'
+channels:
+  pagos.conciliacion.extracto-depositado.v1:
+    description: 'BankStatementDeposited · productor: ARC-005 → consumidor: ARC-026'
+    x-mind-transport: internal
+    x-mind-audience: internal
+    publish:
+      message: &id001
+        $ref: '#/components/messages/BankStatementDeposited'
+      operationId: EVT-001
+    subscribe:
+      message: *id001
+  facturacion.facturas.emitida.v1:
+    description: 'InvoiceIssued · productor: ARC-024 → consumidor: ARC-024'
+    x-mind-transport: internal
+    x-mind-audience: internal
+    publish:
+      message: &id002
+        $ref: '#/components/messages/InvoiceIssued'
+      operationId: EVT-002
+    subscribe:
+      message: *id002
+  pagos.cobros.autorizado.v1:
+    description: 'PaymentAuthorized · productor: ARC-024 → consumidor: ARC-024'
+    x-mind-transport: internal
+    x-mind-audience: internal
+    publish:
+      message: &id003
+        $ref: '#/components/messages/PaymentAuthorized'
+      operationId: EVT-003
+    subscribe:
+      message: *id003
+  pagos.cobros.fallido.v1:
+    description: 'PaymentFailed · productor: ARC-024 → consumidor: ARC-024'
+    x-mind-transport: internal
+    x-mind-audience: internal
+    publish:
+      message: &id004
+        $ref: '#/components/messages/PaymentFailed'
+      operationId: EVT-004
+    subscribe:
+      message: *id004
+  pagos.cobros.procesado.v1:
+    description: 'PaymentProcessed · productor: ARC-024 → consumidor: ARC-024'
+    x-mind-transport: internal
+    x-mind-audience: internal
+    publish:
+      message: &id005
+        $ref: '#/components/messages/PaymentProcessed'
+      operationId: EVT-005
+    subscribe:
+      message: *id005
+  pagos.transferencias.confirmada.v1:
+    description: 'TransferenceSucceeded · productor: ARC-024 → consumidor: ARC-024'
+    x-mind-transport: internal
+    x-mind-audience: internal
+    publish:
+      message: &id006
+        $ref: '#/components/messages/TransferenceSucceeded'
+      operationId: EVT-006
+    subscribe:
+      message: *id006
+  pagos.transferencias.pendiente.v1:
+    description: 'TransferencePending · productor: ARC-024 → consumidor: ARC-024'
+    x-mind-transport: internal
+    x-mind-audience: internal
+    publish:
+      message: &id007
+        $ref: '#/components/messages/TransferencePending'
+      operationId: EVT-007
+    subscribe:
+      message: *id007
+  pagos.transferencias.fallida.v1:
+    description: 'TransferenceFailed · productor: ARC-024 → consumidor: ARC-024'
+    x-mind-transport: internal
+    x-mind-audience: internal
+    publish:
+      message: &id008
+        $ref: '#/components/messages/TransferenceFailed'
+      operationId: EVT-008
+    subscribe:
+      message: *id008
+  pagos.transferencias.revision-manual.v1:
+    description: 'TransferenceManualReview · productor: ARC-024 → consumidor: ARC-024'
+    x-mind-transport: internal
+    x-mind-audience: internal
+    publish:
+      message: &id009
+        $ref: '#/components/messages/TransferenceManualReview'
+      operationId: EVT-009
+    subscribe:
+      message: *id009
+  facturacion.facturas.impagada.v1:
+    description: 'InvoiceUnpaid · productor: ARC-024 → consumidor: ARC-024'
+    x-mind-transport: internal
+    x-mind-audience: internal
+    publish:
+      message: &id010
+        $ref: '#/components/messages/InvoiceUnpaid'
+      operationId: EVT-010
+    subscribe:
+      message: *id010
+  suscripciones.bajas.confirmada.v1:
+    description: 'SubscriptionCancelled · productor: ARC-024 → consumidor: ARC-024'
+    x-mind-transport: internal
+    x-mind-audience: internal
+    publish:
+      message: &id011
+        $ref: '#/components/messages/SubscriptionCancelled'
+      operationId: EVT-011
+    subscribe:
+      message: *id011
+  pagos.reembolsos.completado.v1:
+    description: 'RefundCompleted · productor: ARC-024 → consumidor: ARC-024'
+    x-mind-transport: internal
+    x-mind-audience: internal
+    publish:
+      message: &id012
+        $ref: '#/components/messages/RefundCompleted'
+      operationId: EVT-012
+    subscribe:
+      message: *id012
+  pagos.reembolsos.fallido.v1:
+    description: 'RefundFailed · productor: ARC-024 → consumidor: ARC-024'
+    x-mind-transport: internal
+    x-mind-audience: internal
+    publish:
+      message: &id013
+        $ref: '#/components/messages/RefundFailed'
+      operationId: EVT-013
+    subscribe:
+      message: *id013
+components:
+  messages:
+    BankStatementDeposited:
+      name: BankStatementDeposited
+      summary: nombre de fichero, hash SHA-256 del contenido, fecha del extracto y
+        entidad emisora, sin IBAN completo
+      payload:
+        type: object
+        description: Payload de BankStatementDeposited
+        x-mind-placeholder: true
+    InvoiceIssued:
+      name: InvoiceIssued
+      summary: invoice_id, invoice_number, subscription_id, user_id, amount_cents,
+        due_date, generation_source (SIGNUP/SCHEDULED) y payment_method_type congelado
+        en la factura
+      payload:
+        type: object
+        description: Payload de InvoiceIssued
+        x-mind-placeholder: true
+    InvoiceUnpaid:
+      name: InvoiceUnpaid
+      summary: exactamente invoice_id, invoice_number, user_id, amount_cents, due_date
+        y modality_code, sin datos de pago
+      payload:
+        type: object
+        description: Payload de InvoiceUnpaid
+        x-mind-placeholder: true
+    PaymentAuthorized:
+      name: PaymentAuthorized
+      summary: event_id, correlation_id, user_id, transaction_id, invoice_id, gateway_name,
+        payment_method, subscription_mode, amount_cents, currency y occurred_at; de
+        la tarjeta, como máximo last_four_digits
+      payload:
+        type: object
+        description: Payload de PaymentAuthorized
+        x-mind-placeholder: true
+    PaymentFailed:
+      name: PaymentFailed
+      summary: event_id, correlation_id, user_id, transaction_id, invoice_id, billing_period_start,
+        canonical_error_code, error_nature y close_reason del ciclo de impago (EXHAUSTED/USER_CANCELLED)
+        cuando el fallo lo cierra
+      payload:
+        type: object
+        description: Payload de PaymentFailed
+        x-mind-placeholder: true
+    PaymentProcessed:
+      name: PaymentProcessed
+      summary: payment_id, user_id, subscription_id, status, amount, currency y timestamp
+        del cobro PayPal
+      payload:
+        type: object
+        description: Payload de PaymentProcessed
+        x-mind-placeholder: true
+    RefundCompleted:
+      name: RefundCompleted
+      summary: refund_request_id, cancellation_id, original_transaction_id, refund_ledger_id,
+        correlation_id, payment_method, refund_amount_cents y completed_at
+      payload:
+        type: object
+        description: Payload de RefundCompleted
+        x-mind-placeholder: true
+    RefundFailed:
+      name: RefundFailed
+      summary: refund_request_id, cancellation_id, original_transaction_id, payment_method,
+        failure_code canónico, manual_review_reason y timestamp
+      payload:
+        type: object
+        description: Payload de RefundFailed
+        x-mind-placeholder: true
+    SubscriptionCancelled:
+      name: SubscriptionCancelled
+      summary: cancellation_id, subscription_id, user_id, cancelled_at y billing_period_start
+        del ciclo de impago abierto, si lo hay
+      payload:
+        type: object
+        description: Payload de SubscriptionCancelled
+        x-mind-placeholder: true
+    TransferenceFailed:
+      name: TransferenceFailed
+      summary: transaction_id, user_id, amount, error_code canónico, retry_count y
+        timestamp, sin IBAN completo
+      payload:
+        type: object
+        description: Payload de TransferenceFailed
+        x-mind-placeholder: true
+    TransferenceManualReview:
+      name: TransferenceManualReview
+      summary: transaction_id, user_id, amount, error_code canónico, retry_count agotado
+        y timestamp de escalado
+      payload:
+        type: object
+        description: Payload de TransferenceManualReview
+        x-mind-placeholder: true
+    TransferencePending:
+      name: TransferencePending
+      summary: transaction_id, user_id, iban_last_4, amount, subscription_period_start/end
+        e initiated_timestamp
+      payload:
+        type: object
+        description: Payload de TransferencePending
+        x-mind-placeholder: true
+    TransferenceSucceeded:
+      name: TransferenceSucceeded
+      summary: transaction_id, user_id, iban_last_4, amount, subscription_period_start/end,
+        bank_reference_id y completed_timestamp
+      payload:
+        type: object
+        description: Payload de TransferenceSucceeded
+        x-mind-placeholder: true

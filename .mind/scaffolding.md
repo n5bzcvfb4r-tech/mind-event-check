@@ -1,0 +1,149 @@
+# Scaffolding MIND — mind-event-check
+
+- **Arquetipos ArqRef que se construirán:** `api`, `container-python`, `database-relational`, `event`, `frontend-application-spa` — el esqueleto de cada
+  arquetipo lo aporta el API corporativo (o clónalo de ArqRef); cada repo debe
+  adecuarse a su arquetipo y NUNCA salirse.
+- **Contratos congelados:** 115 endpoints (openapi.yaml, 0 schemas con campos), 13 eventos (asyncapi.yaml).
+- **Base pública de la API:** `/api` (`servers[0].url`). El back monta los routers para que la URL pública sea `base + path`; el front la lee del entorno.
+
+## Layout y disciplina (PR #0)
+
+- El layout es el del arquetipo del repo (ver «Contrato de salida del arquetipo» en cada brief): composition root y raíces de código las fija el arquetipo, no este resumen.
+- Declara cada dependencia de terceros con pin en el manifiesto del arquetipo.
+- `apps/app/public/assets/environments.json` trae `apiBaseUrl` por entorno; `proxy.conf.json` reenvía esa base al backend en `nx serve` (añade `"proxyConfig": "proxy.conf.json"` al target `serve` si el arquetipo no lo trae).
+- `libs/api-types/src/index.ts`: los DTO del contrato, generados. Impórtalos; no declares `interface`s con el nombre de un schema.
+- `playwright.config.ts` + `e2e/*.e2e-spec.ts`: seed de validación browser (smoke/functional/visual). Declara `@playwright/test` en `devDependencies` y los scripts `test:e2e*`; el runtime los ejecuta post-build cuando la policy de Playwright se dispara. Amplía specs por pantalla; no borres el seed.
+
+## Endpoints
+
+- `EP-001` · POST /users → ARC-020
+- `EP-002` · GET /users/availability → ARC-020
+- `EP-003` · POST /email-verifications → ARC-020
+- `EP-004` · POST /email-verification-resends → ARC-020
+- `EP-005` · POST /sessions → ARC-020
+- `EP-006` · DELETE /sessions/current → ARC-020
+- `EP-007` · GET /me/sessions → ARC-020
+- `EP-008` · DELETE /me/sessions/{sessionId} → ARC-020
+- `EP-009` · GET /me/profile → ARC-020
+- `EP-010` · PATCH /me/profile → ARC-020
+- `EP-011` · PUT /me/password → ARC-020
+- `EP-012` · POST /password-resets → ARC-020
+- `EP-013` · POST /password-resets/token-validations → ARC-020
+- `EP-014` · POST /password-resets/confirmations → ARC-020
+- `EP-015` · GET /me/payment-methods → ARC-020
+- `EP-016` · POST /me/payment-methods/bank-accounts → ARC-020
+- `EP-017` · POST /me/payment-methods/cards → ARC-020
+- `EP-018` · POST /me/payment-methods/paypal-authorizations → ARC-020
+- `EP-019` · POST /me/payment-methods/paypal-accounts → ARC-020
+- `EP-020` · PUT /me/payment-methods/default → ARC-020
+- `EP-021` · DELETE /me/payment-methods/{paymentMethodId} → ARC-020
+- `EP-022` · POST /me/payment-methods/{paymentMethodId}/replacements → ARC-020
+- `EP-023` · GET /subscription-plans → ARC-020
+- `EP-024` · POST /me/subscriptions → ARC-020
+- `EP-025` · GET /me/subscription → ARC-020
+- `EP-026` · POST /me/subscription/plan-changes → ARC-020
+- `EP-027` · DELETE /me/subscription/plan-changes/{planChangeId} → ARC-020
+- `EP-028` · GET /me/subscription/cancellation-preview → ARC-020
+- `EP-029` · POST /me/subscription/cancellations → ARC-020
+- `EP-030` · GET /me/dashboard → ARC-020
+- `EP-031` · GET /me/invoices → ARC-020
+- `EP-032` · POST /me/invoices/{invoiceId}/payments → ARC-020
+- `EP-033` · GET /me/payment-transactions → ARC-020
+- `EP-034` · GET /me/payment-transactions/{transactionId} → ARC-020
+- `EP-035` · POST /me/payment-transactions/{transactionId}/sca-confirmations → ARC-020
+- `EP-036` · POST /me/payment-transactions/{transactionId}/paypal-captures → ARC-020
+- `EP-037` · GET /me/bank-transactions → ARC-020
+- `EP-038` · GET /me/refunds → ARC-020
+- `EP-039` · GET /me/nfc-credentials → ARC-020
+- `EP-040` · POST /me/nfc-credentials → ARC-020
+- `EP-041` · DELETE /me/nfc-credentials/{credentialId} → ARC-020
+- `EP-042` · GET /admin/users → ARC-020
+- `EP-043` · GET /admin/user-stats → ARC-020
+- `EP-044` · GET /admin/users/{userId} → ARC-020
+- `EP-045` · DELETE /admin/users/{userId}/sessions → ARC-020
+- `EP-046` · POST /admin/users/{userId}/unlocks → ARC-020
+- `EP-047` · GET /admin/payment-methods → ARC-020
+- `EP-048` · GET /admin/transactions → ARC-020
+- `EP-049` · GET /admin/transactions/{ledgerId} → ARC-020
+- `EP-050` · GET /admin/correlations/{correlationId}/events → ARC-020
+- `EP-051` · POST /admin/ledger-integrity-checks → ARC-020
+- `EP-052` · GET /admin/ledger-access-logs → ARC-020
+- `EP-053` · GET /admin/payment-audit-entries → ARC-020
+- `EP-054` · GET /admin/bank-transactions → ARC-020
+- `EP-055` · GET /admin/bank-transactions/{transactionId} → ARC-020
+- `EP-056` · POST /admin/bank-transactions/{transactionId}/retries → ARC-020
+- `EP-057` · GET /admin/bank-transactions/exports → ARC-020
+- `EP-058` · POST /admin/bank-statements → ARC-020
+- `EP-059` · GET /admin/reconciliation-runs → ARC-020
+- `EP-060` · POST /admin/reconciliation-runs → ARC-020
+- `EP-061` · GET /admin/reconciliation-runs/{runId}/corrections → ARC-020
+- `EP-062` · POST /admin/reconciliation-matches/{matchId}/confirmations → ARC-020
+- `EP-063` · GET /admin/reconciliation-exceptions → ARC-020
+- `EP-064` · PATCH /admin/reconciliation-exceptions/{exceptionId} → ARC-020
+- `EP-065` · POST /admin/reconciliation-exceptions/{exceptionId}/resolutions → ARC-020
+- `EP-066` · GET /admin/refund-requests → ARC-020
+- `EP-067` · POST /admin/refund-requests/{refundRequestId}/retries → ARC-020
+- `EP-068` · POST /admin/refund-requests/{refundRequestId}/external-resolutions → ARC-020
+- `EP-069` · GET /admin/dunning-cycles → ARC-020
+- `EP-070` · POST /admin/dunning-cycles/{cycleId}/retries → ARC-020
+- `EP-071` · GET /admin/retry-policies → ARC-020
+- `EP-072` · POST /admin/retry-policies/previews → ARC-020
+- `EP-073` · POST /admin/retry-policies → ARC-020
+- `EP-074` · GET /admin/payment-error-codes → ARC-020
+- `EP-075` · POST /admin/payment-error-codes → ARC-020
+- `EP-076` · PUT /admin/payment-error-codes/{errorCodeId} → ARC-020
+- `EP-077` · GET /admin/billing-runs → ARC-020
+- `EP-078` · POST /admin/billing-runs → ARC-020
+- `EP-079` · GET /admin/reports/income → ARC-020
+- `EP-080` · GET /admin/reports/users → ARC-020
+- `EP-081` · GET /admin/reports/recurring-unpaid → ARC-020
+- `EP-082` · GET /admin/reports/{reportType}/exports → ARC-020
+- `EP-083` · GET /admin/payment-reminder-cases → ARC-020
+- `EP-084` · GET /admin/payment-reminder-cases/{caseId} → ARC-020
+- `EP-085` · GET /admin/reminder-detector-runs → ARC-020
+- `EP-086` · POST /admin/reminder-detector-runs → ARC-020
+- `EP-087` · GET /admin/payment-reminder-schedules → ARC-020
+- `EP-088` · POST /admin/payment-reminder-schedules/impact-previews → ARC-020
+- `EP-089` · POST /admin/payment-reminder-schedules → ARC-020
+- `EP-090` · GET /admin/smtp-configs → ARC-020
+- `EP-091` · POST /admin/smtp-configs/validations → ARC-020
+- `EP-092` · POST /admin/smtp-configs → ARC-020
+- `EP-093` · GET /admin/email-templates → ARC-020
+- `EP-094` · PUT /admin/email-templates/{templateKey} → ARC-020
+- `EP-095` · POST /admin/email-templates/{templateKey}/restorations → ARC-020
+- `EP-096` · POST /admin/email-templates/{templateKey}/test-sends → ARC-020
+- `EP-097` · GET /admin/sms-configs → ARC-020
+- `EP-098` · POST /admin/sms-configs/validations → ARC-020
+- `EP-099` · POST /admin/sms-configs → ARC-020
+- `EP-100` · GET /admin/sms-dispatches → ARC-020
+- `EP-101` · GET /admin/sms-templates → ARC-020
+- `EP-102` · PUT /admin/sms-templates/{templateCode} → ARC-020
+- `EP-103` · POST /admin/sms-templates/{templateCode}/test-sends → ARC-020
+- `EP-104` · GET /admin/email-verification-resend-runs → ARC-020
+- `EP-105` · GET /admin/retention-runs → ARC-020
+- `EP-106` · POST /admin/retention-runs → ARC-020
+- `EP-107` · POST /admin/nfc-credentials/{credentialId}/revocations → ARC-020
+- `EP-108` · GET /admin/access-attempts → ARC-020
+- `EP-109` · GET /admin/users/{userId}/nfc-credentials → ARC-020
+- `EP-110` · GET /admin/provider-events → ARC-020
+- `EP-111` · POST /webhooks/card-gateway-events → ARC-021
+- `EP-112` · POST /webhooks/paypal-events → ARC-021
+- `EP-113` · POST /webhooks/email-delivery-events → ARC-021
+- `EP-114` · POST /webhooks/sms-delivery-reports → ARC-021
+- `EP-115` · POST /access-decisions → ARC-022
+
+## Eventos
+
+- `EVT-001` · BankStatementDeposited (pagos.conciliacion.extracto-depositado.v1)
+- `EVT-002` · InvoiceIssued (facturacion.facturas.emitida.v1)
+- `EVT-003` · PaymentAuthorized (pagos.cobros.autorizado.v1)
+- `EVT-004` · PaymentFailed (pagos.cobros.fallido.v1)
+- `EVT-005` · PaymentProcessed (pagos.cobros.procesado.v1)
+- `EVT-006` · TransferenceSucceeded (pagos.transferencias.confirmada.v1)
+- `EVT-007` · TransferencePending (pagos.transferencias.pendiente.v1)
+- `EVT-008` · TransferenceFailed (pagos.transferencias.fallida.v1)
+- `EVT-009` · TransferenceManualReview (pagos.transferencias.revision-manual.v1)
+- `EVT-010` · InvoiceUnpaid (facturacion.facturas.impagada.v1)
+- `EVT-011` · SubscriptionCancelled (suscripciones.bajas.confirmada.v1)
+- `EVT-012` · RefundCompleted (pagos.reembolsos.completado.v1)
+- `EVT-013` · RefundFailed (pagos.reembolsos.fallido.v1)

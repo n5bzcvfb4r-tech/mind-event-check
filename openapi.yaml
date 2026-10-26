@@ -1,0 +1,3375 @@
+openapi: 3.0.3
+info:
+  title: mind-event-check — API
+  version: 0.1.0
+  description: 'Contrato generado por MIND desde los contratos de arquitectura (T.3,
+    contract-first PR #0). Paths, verbos y campos de los schemas son LEY; los esquemas
+    marcados x-mind-placeholder aún no tienen campos y los completa la construcción
+    sin cambiar path/verb.'
+servers:
+- url: /api
+  description: Base pública de la API
+paths:
+  /users:
+    post:
+      operationId: EP-001
+      summary: Registra un socio con sus datos personales y su contraseña, y envía
+        el email de confirmación
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRegistrationResponse'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /users/availability:
+    get:
+      operationId: EP-002
+      summary: Comprueba si un email o un nick están libres antes del registro
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserAvailabilityResponse'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /email-verifications:
+    post:
+      operationId: EP-003
+      summary: Confirma el email con el token del enlace y activa la cuenta
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailVerificationConfirmRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailVerificationResult'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /email-verification-resends:
+    post:
+      operationId: EP-004
+      summary: Reenvía el enlace de confirmación con un token nuevo de 24 h
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailVerificationResendRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptedResponse'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /sessions:
+    post:
+      operationId: EP-005
+      summary: Inicia sesión con email o nick y contraseña, y emite la sesión segura
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /sessions/current:
+    delete:
+      operationId: EP-006
+      summary: Cierra y revoca la sesión actual
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '204':
+          description: OK
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /me/sessions:
+    get:
+      operationId: EP-007
+      summary: Lista las sesiones abiertas del socio
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionList'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /me/sessions/{sessionId}:
+    delete:
+      operationId: EP-008
+      summary: Revoca una sesión propia
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '204':
+          description: OK
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /me/profile:
+    get:
+      operationId: EP-009
+      summary: Devuelve los datos personales del socio autenticado
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileDetail'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+    patch:
+      operationId: EP-010
+      summary: Actualiza los datos personales editables (todos salvo el nick)
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileUpdateRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileDetail'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /me/password:
+    put:
+      operationId: EP-011
+      summary: Cambia la contraseña verificando la actual y revoca las demás sesiones
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordChangeRequest'
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /password-resets:
+    post:
+      operationId: EP-012
+      summary: Solicita el enlace de recuperación de contraseña con una respuesta
+        genérica
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptedResponse'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /password-resets/token-validations:
+    post:
+      operationId: EP-013
+      summary: Valida el token de recuperación antes de mostrar el formulario
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetTokenRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordResetTokenStatus'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /password-resets/confirmations:
+    post:
+      operationId: EP-014
+      summary: Fija la nueva contraseña y consume el token de recuperación
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+      responses:
+        '201':
+          description: OK
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /me/payment-methods:
+    get:
+      operationId: EP-015
+      summary: Lista los métodos de pago activos del socio, enmascarados
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMethodList'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /me/payment-methods/bank-accounts:
+    post:
+      operationId: EP-016
+      summary: Registra un IBAN validado según ISO 13616 y lo guarda cifrado
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BankAccountCreateRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMethodSummary'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /me/payment-methods/cards:
+    post:
+      operationId: EP-017
+      summary: Registra una tarjeta tokenizada en el gateway, sin persistir el PAN
+        ni el CVV
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CardPaymentMethodCreateRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMethodSummary'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /me/payment-methods/paypal-authorizations:
+    post:
+      operationId: EP-018
+      summary: Inicia la vinculación OAuth2 de PayPal y devuelve la URL de autorización
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayPalAuthorizationResponse'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /me/payment-methods/paypal-accounts:
+    post:
+      operationId: EP-019
+      summary: Completa la vinculación de PayPal con el código y el state del callback
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PayPalAccountLinkRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMethodSummary'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /me/payment-methods/default:
+    put:
+      operationId: EP-020
+      summary: Marca un método de pago como el único predeterminado
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DefaultPaymentMethodRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMethodSummary'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /me/payment-methods/{paymentMethodId}:
+    delete:
+      operationId: EP-021
+      summary: Elimina de forma lógica un método de pago propio y reasigna el predeterminado
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '204':
+          description: OK
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /me/payment-methods/{paymentMethodId}/replacements:
+    post:
+      operationId: EP-022
+      summary: Sustituye una tarjeta caducada o próxima a caducar y reanuda el dunning
+        suspendido
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CardReplacementRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardReplacementResult'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /subscription-plans:
+    get:
+      operationId: EP-023
+      summary: Muestra las modalidades activas con precio, equivalente mensual y ahorro
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionPlanList'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /me/subscriptions:
+    post:
+      operationId: EP-024
+      summary: Contrata una suscripción con una modalidad y un método de pago, y emite
+        la factura inicial
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionCreateRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionCreated'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /me/subscription:
+    get:
+      operationId: EP-025
+      summary: Devuelve la modalidad, la próxima renovación, el método enmascarado
+        y el estado de baja y devolución
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionSummary'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /me/subscription/plan-changes:
+    post:
+      operationId: EP-026
+      summary: Programa un cambio de modalidad para la siguiente fecha de ciclo
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanChangeRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PendingPlanChange'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /me/subscription/plan-changes/{planChangeId}:
+    delete:
+      operationId: EP-027
+      summary: Anula un cambio de modalidad pendiente hasta la víspera de su aplicación
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '204':
+          description: OK
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /me/subscription/cancellation-preview:
+    get:
+      operationId: EP-028
+      summary: Calcula, sin persistir nada, el importe proporcional a devolver y el
+        método de devolución
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CancellationPreview'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /me/subscription/cancellations:
+    post:
+      operationId: EP-029
+      summary: Confirma la baja, detiene la facturación y lanza la devolución proporcional
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancellationRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CancellationReceipt'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /me/dashboard:
+    get:
+      operationId: EP-030
+      summary: Devuelve en una sola carga facturas, próximo cobro, modalidad y avisos
+        priorizados
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionDashboard'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /me/invoices:
+    get:
+      operationId: EP-031
+      summary: Lista las facturas de los últimos 12 meses con su estado de pago real
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceHistory'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /me/invoices/{invoiceId}/payments:
+    post:
+      operationId: EP-032
+      summary: Inicia el pago de una factura propia con el método elegido, de forma
+        idempotente
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoicePaymentRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentAttemptResult'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /me/payment-transactions:
+    get:
+      operationId: EP-033
+      summary: Lista los cobros propios con filtros y paginación, sin datos de tarjeta
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentTransactionPage'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /me/payment-transactions/{transactionId}:
+    get:
+      operationId: EP-034
+      summary: Consulta el estado de un cobro propio (retorno, espera o verificación)
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentTransactionDetail'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /me/payment-transactions/{transactionId}/sca-confirmations:
+    post:
+      operationId: EP-035
+      summary: Confirma el resultado del desafío 3-D Secure de un cobro con tarjeta
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScaConfirmationRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentAttemptResult'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /me/payment-transactions/{transactionId}/paypal-captures:
+    post:
+      operationId: EP-036
+      summary: Captura el cobro PayPal cuando el pagador lo ha aprobado
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PayPalCaptureRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentAttemptResult'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /me/bank-transactions:
+    get:
+      operationId: EP-037
+      summary: Lista las transferencias propias de los últimos 12 meses (Mis pagos)
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankTransactionPage'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /me/refunds:
+    get:
+      operationId: EP-038
+      summary: Lista los reembolsos propios con su estado de negocio
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefundStatusList'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /me/nfc-credentials:
+    get:
+      operationId: EP-039
+      summary: Consulta el estado de la credencial NFC del socio
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NfcCredentialList'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+    post:
+      operationId: EP-040
+      summary: Activa una credencial NFC ligada al dispositivo, previa reautenticación
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NfcCredentialActivationRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NfcCredentialDetail'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /me/nfc-credentials/{credentialId}:
+    delete:
+      operationId: EP-041
+      summary: Desactiva la credencial NFC propia de forma idempotente
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '204':
+          description: OK
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/users:
+    get:
+      operationId: EP-042
+      summary: Lista los usuarios con su perfil, suscripción y estado de facturación,
+        con búsqueda y filtros
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserPage'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/user-stats:
+    get:
+      operationId: EP-043
+      summary: Devuelve el resumen agregado por estado de suscripción, modalidad y
+        facturación
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserStats'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/users/{userId}:
+    get:
+      operationId: EP-044
+      summary: Abre la ficha de solo lectura de un usuario y deja traza de auditoría
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserDetail'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/users/{userId}/sessions:
+    delete:
+      operationId: EP-045
+      summary: Revoca todas las sesiones activas de un usuario
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '204':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionRevocationResult'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/users/{userId}/unlocks:
+    post:
+      operationId: EP-046
+      summary: Desbloquea una cuenta bloqueada por intentos fallidos y revoca sus
+        sesiones
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '201':
+          description: OK
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/payment-methods:
+    get:
+      operationId: EP-047
+      summary: Lista los métodos de pago de todos los usuarios, enmascarados y con
+        auditoría
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMethodPage'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/transactions:
+    get:
+      operationId: EP-048
+      summary: Consulta el registro consolidado de transacciones con filtros y totales
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LedgerEntryPage'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/transactions/{ledgerId}:
+    get:
+      operationId: EP-049
+      summary: Muestra la traza completa de un asiento con sus reembolsos y su conciliación
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LedgerEntryTrace'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/correlations/{correlationId}/events:
+    get:
+      operationId: EP-050
+      summary: Devuelve en orden cronológico los eventos de un correlation_id
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionEventTimeline'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/ledger-integrity-checks:
+    post:
+      operationId: EP-051
+      summary: Lanza la verificación de la cadena de hashes del ledger
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrityCheckResult'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/ledger-access-logs:
+    get:
+      operationId: EP-052
+      summary: Consulta los accesos administrativos al ledger (ADMIN_AUDIT)
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LedgerAccessLogPage'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/payment-audit-entries:
+    get:
+      operationId: EP-053
+      summary: Consulta el historial de auditoría de pagos sin datos sensibles
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentAuditPage'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/bank-transactions:
+    get:
+      operationId: EP-054
+      summary: Lista las transferencias de todos los usuarios con filtros
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankTransactionAdminPage'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/bank-transactions/{transactionId}:
+    get:
+      operationId: EP-055
+      summary: Muestra el detalle de una transferencia con su historial de reintentos
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankTransactionAdminDetail'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/bank-transactions/{transactionId}/retries:
+    post:
+      operationId: EP-056
+      summary: Fuerza el reintento manual de una transferencia fallida
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankTransactionAdminDetail'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/bank-transactions/exports:
+    get:
+      operationId: EP-057
+      summary: Exporta a CSV las transferencias filtradas, sin datos sensibles
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CsvFile'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/bank-statements:
+    post:
+      operationId: EP-058
+      summary: Sube manualmente un extracto bancario para conciliarlo
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BankStatementUpload'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankStatementImportResult'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/reconciliation-runs:
+    get:
+      operationId: EP-059
+      summary: Lista las ejecuciones de conciliación con sus contadores
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReconciliationRunPage'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+    post:
+      operationId: EP-060
+      summary: Relanza la conciliación de un proveedor y un periodo
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReconciliationRunRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReconciliationRunSummary'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/reconciliation-runs/{runId}/corrections:
+    get:
+      operationId: EP-061
+      summary: Lista las correcciones aplicadas en una ejecución de conciliación
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReconciliationCorrectionList'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/reconciliation-matches/{matchId}/confirmations:
+    post:
+      operationId: EP-062
+      summary: Confirma un emparejamiento heurístico de cobro o devolución
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MatchConfirmationRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReconciliationMatchDetail'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/reconciliation-exceptions:
+    get:
+      operationId: EP-063
+      summary: Muestra la bandeja de excepciones de conciliación
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReconciliationExceptionPage'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/reconciliation-exceptions/{exceptionId}:
+    patch:
+      operationId: EP-064
+      summary: Asigna una excepción y la pasa a revisión
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExceptionAssignmentRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReconciliationExceptionDetail'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/reconciliation-exceptions/{exceptionId}/resolutions:
+    post:
+      operationId: EP-065
+      summary: Cierra una excepción con nota y tipo de resolución (asiento compensatorio
+        si procede)
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExceptionResolutionRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReconciliationExceptionDetail'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/refund-requests:
+    get:
+      operationId: EP-066
+      summary: Lista las órdenes de reembolso, incluidas las que están en revisión
+        manual
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefundRequestPage'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/refund-requests/{refundRequestId}/retries:
+    post:
+      operationId: EP-067
+      summary: Reintenta un reembolso en revisión manual por el mismo método
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundRetryRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefundRequestDetail'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/refund-requests/{refundRequestId}/external-resolutions:
+    post:
+      operationId: EP-068
+      summary: Marca un reembolso como resuelto externamente con referencia y nota
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExternalRefundResolutionRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefundRequestDetail'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/dunning-cycles:
+    get:
+      operationId: EP-069
+      summary: Lista los ciclos de recobro de tarjeta, PayPal y transferencia
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DunningCyclePage'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/dunning-cycles/{cycleId}/retries:
+    post:
+      operationId: EP-070
+      summary: Fuerza un reintento de cobro en un ciclo abierto, con traza
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DunningCycleDetail'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/retry-policies:
+    get:
+      operationId: EP-071
+      summary: Consulta la política de reintentos activa y su histórico por método
+        y fase
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetryPolicyList'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+    post:
+      operationId: EP-073
+      summary: Crea y activa una nueva versión de la política de reintentos
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RetryPolicyVersionRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetryPolicyVersion'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/retry-policies/previews:
+    post:
+      operationId: EP-072
+      summary: Previsualiza el calendario resultante de una política de reintentos
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RetryPolicyDraft'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetryCalendarPreview'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/payment-error-codes:
+    get:
+      operationId: EP-074
+      summary: Consulta el catálogo de códigos de error de pago
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentErrorCodeList'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+    post:
+      operationId: EP-075
+      summary: Da de alta la correspondencia entre un código del proveedor y un código
+        canónico
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentErrorCodeRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentErrorCode'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/payment-error-codes/{errorCodeId}:
+    put:
+      operationId: EP-076
+      summary: Modifica una correspondencia del catálogo de códigos de error
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentErrorCodeRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentErrorCode'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/billing-runs:
+    get:
+      operationId: EP-077
+      summary: Consulta las ejecuciones del job de facturación periódica
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillingRunPage'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+    post:
+      operationId: EP-078
+      summary: Relanza manualmente el job de facturación periódica
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillingRunSummary'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/reports/income:
+    get:
+      operationId: EP-079
+      summary: Devuelve lo recaudado, los reembolsos y el neto por modalidad en un
+        periodo
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncomeReport'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/reports/users:
+    get:
+      operationId: EP-080
+      summary: Devuelve los usuarios activos, las bajas y la tasa de cancelación de
+        un periodo
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserActivityReport'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/reports/recurring-unpaid:
+    get:
+      operationId: EP-081
+      summary: Lista los usuarios con dos o más facturas impagadas al cierre del periodo
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecurringUnpaidReport'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/reports/{reportType}/exports:
+    get:
+      operationId: EP-082
+      summary: Exporta a CSV un reporte con los mismos datos y periodo que en pantalla
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CsvFile'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/payment-reminder-cases:
+    get:
+      operationId: EP-083
+      summary: Lista los casos de aviso de impago por usuario o por factura
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReminderCasePage'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/payment-reminder-cases/{caseId}:
+    get:
+      operationId: EP-084
+      summary: Muestra los hitos, intentos y eventos de entrega de un caso de aviso
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReminderCaseDetail'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/reminder-detector-runs:
+    get:
+      operationId: EP-085
+      summary: Consulta las ejecuciones del detector de impagos
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReminderDetectorRunPage'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+    post:
+      operationId: EP-086
+      summary: Relanza manualmente el detector de impagos
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReminderDetectorRunSummary'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/payment-reminder-schedules:
+    get:
+      operationId: EP-087
+      summary: Consulta el calendario de avisos activo y su histórico de versiones
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReminderScheduleVersionList'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+    post:
+      operationId: EP-089
+      summary: Confirma una nueva versión del calendario y del tope de avisos
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReminderScheduleVersionRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReminderScheduleVersion'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/payment-reminder-schedules/impact-previews:
+    post:
+      operationId: EP-088
+      summary: Previsualiza el impacto de un cambio en el calendario, los canales
+        o el tope de avisos
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReminderScheduleDraft'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReminderImpactPreview'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/smtp-configs:
+    get:
+      operationId: EP-090
+      summary: Consulta la configuración SMTP activa y su historial, sin el secreto
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SmtpConfigView'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+    post:
+      operationId: EP-092
+      summary: Guarda la configuración SMTP validada como nueva versión activa
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SmtpConfigVersionRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SmtpConfigView'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/smtp-configs/validations:
+    post:
+      operationId: EP-091
+      summary: Valida la conexión SMTP de un borrador sin guardarlo
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SmtpConfigDraft'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SmtpValidationResult'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/email-templates:
+    get:
+      operationId: EP-093
+      summary: Lista las plantillas predefinidas de email de impago
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailTemplateList'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/email-templates/{templateKey}:
+    put:
+      operationId: EP-094
+      summary: Edita el asunto y el cuerpo de una plantilla de email y crea una versión
+        nueva
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailTemplateUpdateRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailTemplateVersion'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/email-templates/{templateKey}/restorations:
+    post:
+      operationId: EP-095
+      summary: Restaura el texto predefinido de una plantilla como versión nueva
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemplateRestoreRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailTemplateVersion'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/email-templates/{templateKey}/test-sends:
+    post:
+      operationId: EP-096
+      summary: Envía un email de prueba al correo del ADMIN con valores ficticios
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailTemplateTestRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestSendResult'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/sms-configs:
+    get:
+      operationId: EP-097
+      summary: Consulta la configuración SMS activa y su histórico, sin secretos
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SmsConfigView'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+    post:
+      operationId: EP-099
+      summary: Guarda la configuración SMS validada como nueva versión activa
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SmsConfigVersionRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SmsConfigView'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/sms-configs/validations:
+    post:
+      operationId: EP-098
+      summary: Valida la conexión con el proveedor de SMS sin enviar ningún SMS
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SmsConfigDraft'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SmsValidationResult'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/sms-dispatches:
+    get:
+      operationId: EP-100
+      summary: Consulta la cola de envío de SMS con el destino enmascarado
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SmsDispatchPage'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/sms-templates:
+    get:
+      operationId: EP-101
+      summary: Lista las plantillas predefinidas de SMS de impago
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SmsTemplateList'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/sms-templates/{templateCode}:
+    put:
+      operationId: EP-102
+      summary: Edita una plantilla SMS y crea una versión nueva
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SmsTemplateUpdateRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SmsTemplateVersion'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/sms-templates/{templateCode}/test-sends:
+    post:
+      operationId: EP-103
+      summary: Envía un SMS de prueba al móvil del ADMIN con valores ficticios
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SmsTemplateTestRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestSendResult'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/email-verification-resend-runs:
+    get:
+      operationId: EP-104
+      summary: Consulta las ejecuciones del job de reenvío de confirmaciones
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResendRunPage'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/retention-runs:
+    get:
+      operationId: EP-105
+      summary: Consulta las ejecuciones de retención, anonimización y derecho al olvido
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetentionRunPage'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+    post:
+      operationId: EP-106
+      summary: Lanza manualmente un proceso de retención o de derecho al olvido
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RetentionRunRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetentionRunSummary'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/nfc-credentials/{credentialId}/revocations:
+    post:
+      operationId: EP-107
+      summary: Revoca la credencial NFC de un usuario con motivo y comentario auditados
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NfcCredentialRevocationRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NfcCredentialDetail'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/access-attempts:
+    get:
+      operationId: EP-108
+      summary: Consulta los intentos de acceso NFC filtrados por usuario, lector,
+        decisión y periodo
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessAttemptPage'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/users/{userId}/nfc-credentials:
+    get:
+      operationId: EP-109
+      summary: Muestra la credencial NFC de un usuario y sus últimos intentos de acceso
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserNfcAccessDetail'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /admin/provider-events:
+    get:
+      operationId: EP-110
+      summary: Consulta las notificaciones recibidas de los proveedores y su estado
+        de procesamiento
+      tags:
+      - ARC-020
+      x-mind-implemented-by: ARC-024
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderEventPage'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /webhooks/card-gateway-events:
+    post:
+      operationId: EP-111
+      summary: Recibe y valida por firma los eventos de estado del gateway de tarjeta
+      tags:
+      - ARC-021
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CardGatewayWebhookEvent'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookAck'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /webhooks/paypal-events:
+    post:
+      operationId: EP-112
+      summary: Recibe y valida por firma los eventos de cobros y reembolsos de PayPal
+      tags:
+      - ARC-021
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PayPalWebhookEvent'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookAck'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /webhooks/email-delivery-events:
+    post:
+      operationId: EP-113
+      summary: Recibe el estado de entrega de los emails del proveedor
+      tags:
+      - ARC-021
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailDeliveryEvent'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookAck'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /webhooks/sms-delivery-reports:
+    post:
+      operationId: EP-114
+      summary: Recibe los informes de entrega (DLR) de los SMS
+      tags:
+      - ARC-021
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SmsDeliveryReport'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookAck'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+  /access-decisions:
+    post:
+      operationId: EP-115
+      summary: Verifica la credencial NFC presentada al lector y decide el acceso
+        según la suscripción
+      tags:
+      - ARC-022
+      x-mind-implemented-by: ARC-024
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccessDecisionRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessDecision'
+        '401':
+          description: No autenticado
+        '403':
+          description: Prohibido
+      x-required-roles: []
+      security:
+      - bearerAuth: []
+      x-mind-access: deny-all
+components:
+  schemas:
+    AcceptedResponse:
+      type: object
+      description: Respuesta AcceptedResponse
+      x-mind-placeholder: true
+    AccessAttemptPage:
+      type: object
+      description: Respuesta AccessAttemptPage
+      x-mind-placeholder: true
+    AccessDecision:
+      type: object
+      description: Respuesta AccessDecision
+      x-mind-placeholder: true
+    AccessDecisionRequest:
+      type: object
+      description: Cuerpo de petición AccessDecisionRequest
+      x-mind-placeholder: true
+    AdminUserDetail:
+      type: object
+      description: Respuesta AdminUserDetail
+      x-mind-placeholder: true
+    AdminUserPage:
+      type: object
+      description: Respuesta AdminUserPage
+      x-mind-placeholder: true
+    AdminUserStats:
+      type: object
+      description: Respuesta AdminUserStats
+      x-mind-placeholder: true
+    BankAccountCreateRequest:
+      type: object
+      description: Cuerpo de petición BankAccountCreateRequest
+      x-mind-placeholder: true
+    BankStatementImportResult:
+      type: object
+      description: Respuesta BankStatementImportResult
+      x-mind-placeholder: true
+    BankStatementUpload:
+      type: object
+      description: Cuerpo de petición BankStatementUpload
+      x-mind-placeholder: true
+    BankTransactionAdminDetail:
+      type: object
+      description: Respuesta BankTransactionAdminDetail
+      x-mind-placeholder: true
+    BankTransactionAdminPage:
+      type: object
+      description: Respuesta BankTransactionAdminPage
+      x-mind-placeholder: true
+    BankTransactionPage:
+      type: object
+      description: Respuesta BankTransactionPage
+      x-mind-placeholder: true
+    BillingRunPage:
+      type: object
+      description: Respuesta BillingRunPage
+      x-mind-placeholder: true
+    BillingRunSummary:
+      type: object
+      description: Respuesta BillingRunSummary
+      x-mind-placeholder: true
+    CancellationPreview:
+      type: object
+      description: Respuesta CancellationPreview
+      x-mind-placeholder: true
+    CancellationReceipt:
+      type: object
+      description: Respuesta CancellationReceipt
+      x-mind-placeholder: true
+    CancellationRequest:
+      type: object
+      description: Cuerpo de petición CancellationRequest
+      x-mind-placeholder: true
+    CardGatewayWebhookEvent:
+      type: object
+      description: Cuerpo de petición CardGatewayWebhookEvent
+      x-mind-placeholder: true
+    CardPaymentMethodCreateRequest:
+      type: object
+      description: Cuerpo de petición CardPaymentMethodCreateRequest
+      x-mind-placeholder: true
+    CardReplacementRequest:
+      type: object
+      description: Cuerpo de petición CardReplacementRequest
+      x-mind-placeholder: true
+    CardReplacementResult:
+      type: object
+      description: Respuesta CardReplacementResult
+      x-mind-placeholder: true
+    CsvFile:
+      type: object
+      description: Respuesta CsvFile
+      x-mind-placeholder: true
+    DefaultPaymentMethodRequest:
+      type: object
+      description: Cuerpo de petición DefaultPaymentMethodRequest
+      x-mind-placeholder: true
+    DunningCycleDetail:
+      type: object
+      description: Respuesta DunningCycleDetail
+      x-mind-placeholder: true
+    DunningCyclePage:
+      type: object
+      description: Respuesta DunningCyclePage
+      x-mind-placeholder: true
+    EmailDeliveryEvent:
+      type: object
+      description: Cuerpo de petición EmailDeliveryEvent
+      x-mind-placeholder: true
+    EmailTemplateList:
+      type: object
+      description: Respuesta EmailTemplateList
+      x-mind-placeholder: true
+    EmailTemplateTestRequest:
+      type: object
+      description: Cuerpo de petición EmailTemplateTestRequest
+      x-mind-placeholder: true
+    EmailTemplateUpdateRequest:
+      type: object
+      description: Cuerpo de petición EmailTemplateUpdateRequest
+      x-mind-placeholder: true
+    EmailTemplateVersion:
+      type: object
+      description: Respuesta EmailTemplateVersion
+      x-mind-placeholder: true
+    EmailVerificationConfirmRequest:
+      type: object
+      description: Cuerpo de petición EmailVerificationConfirmRequest
+      x-mind-placeholder: true
+    EmailVerificationResendRequest:
+      type: object
+      description: Cuerpo de petición EmailVerificationResendRequest
+      x-mind-placeholder: true
+    EmailVerificationResult:
+      type: object
+      description: Respuesta EmailVerificationResult
+      x-mind-placeholder: true
+    ExceptionAssignmentRequest:
+      type: object
+      description: Cuerpo de petición ExceptionAssignmentRequest
+      x-mind-placeholder: true
+    ExceptionResolutionRequest:
+      type: object
+      description: Cuerpo de petición ExceptionResolutionRequest
+      x-mind-placeholder: true
+    ExternalRefundResolutionRequest:
+      type: object
+      description: Cuerpo de petición ExternalRefundResolutionRequest
+      x-mind-placeholder: true
+    IncomeReport:
+      type: object
+      description: Respuesta IncomeReport
+      x-mind-placeholder: true
+    IntegrityCheckResult:
+      type: object
+      description: Respuesta IntegrityCheckResult
+      x-mind-placeholder: true
+    InvoiceHistory:
+      type: object
+      description: Respuesta InvoiceHistory
+      x-mind-placeholder: true
+    InvoicePaymentRequest:
+      type: object
+      description: Cuerpo de petición InvoicePaymentRequest
+      x-mind-placeholder: true
+    LedgerAccessLogPage:
+      type: object
+      description: Respuesta LedgerAccessLogPage
+      x-mind-placeholder: true
+    LedgerEntryPage:
+      type: object
+      description: Respuesta LedgerEntryPage
+      x-mind-placeholder: true
+    LedgerEntryTrace:
+      type: object
+      description: Respuesta LedgerEntryTrace
+      x-mind-placeholder: true
+    LoginRequest:
+      type: object
+      description: Cuerpo de petición LoginRequest
+      x-mind-placeholder: true
+    MatchConfirmationRequest:
+      type: object
+      description: Cuerpo de petición MatchConfirmationRequest
+      x-mind-placeholder: true
+    NfcCredentialActivationRequest:
+      type: object
+      description: Cuerpo de petición NfcCredentialActivationRequest
+      x-mind-placeholder: true
+    NfcCredentialDetail:
+      type: object
+      description: Respuesta NfcCredentialDetail
+      x-mind-placeholder: true
+    NfcCredentialList:
+      type: object
+      description: Respuesta NfcCredentialList
+      x-mind-placeholder: true
+    NfcCredentialRevocationRequest:
+      type: object
+      description: Cuerpo de petición NfcCredentialRevocationRequest
+      x-mind-placeholder: true
+    PasswordChangeRequest:
+      type: object
+      description: Cuerpo de petición PasswordChangeRequest
+      x-mind-placeholder: true
+    PasswordResetConfirmRequest:
+      type: object
+      description: Cuerpo de petición PasswordResetConfirmRequest
+      x-mind-placeholder: true
+    PasswordResetRequest:
+      type: object
+      description: Cuerpo de petición PasswordResetRequest
+      x-mind-placeholder: true
+    PasswordResetTokenRequest:
+      type: object
+      description: Cuerpo de petición PasswordResetTokenRequest
+      x-mind-placeholder: true
+    PasswordResetTokenStatus:
+      type: object
+      description: Respuesta PasswordResetTokenStatus
+      x-mind-placeholder: true
+    PayPalAccountLinkRequest:
+      type: object
+      description: Cuerpo de petición PayPalAccountLinkRequest
+      x-mind-placeholder: true
+    PayPalAuthorizationResponse:
+      type: object
+      description: Respuesta PayPalAuthorizationResponse
+      x-mind-placeholder: true
+    PayPalCaptureRequest:
+      type: object
+      description: Cuerpo de petición PayPalCaptureRequest
+      x-mind-placeholder: true
+    PayPalWebhookEvent:
+      type: object
+      description: Cuerpo de petición PayPalWebhookEvent
+      x-mind-placeholder: true
+    PaymentAttemptResult:
+      type: object
+      description: Respuesta PaymentAttemptResult
+      x-mind-placeholder: true
+    PaymentAuditPage:
+      type: object
+      description: Respuesta PaymentAuditPage
+      x-mind-placeholder: true
+    PaymentErrorCode:
+      type: object
+      description: Respuesta PaymentErrorCode
+      x-mind-placeholder: true
+    PaymentErrorCodeList:
+      type: object
+      description: Respuesta PaymentErrorCodeList
+      x-mind-placeholder: true
+    PaymentErrorCodeRequest:
+      type: object
+      description: Cuerpo de petición PaymentErrorCodeRequest
+      x-mind-placeholder: true
+    PaymentMethodList:
+      type: object
+      description: Respuesta PaymentMethodList
+      x-mind-placeholder: true
+    PaymentMethodPage:
+      type: object
+      description: Respuesta PaymentMethodPage
+      x-mind-placeholder: true
+    PaymentMethodSummary:
+      type: object
+      description: Respuesta PaymentMethodSummary
+      x-mind-placeholder: true
+    PaymentTransactionDetail:
+      type: object
+      description: Respuesta PaymentTransactionDetail
+      x-mind-placeholder: true
+    PaymentTransactionPage:
+      type: object
+      description: Respuesta PaymentTransactionPage
+      x-mind-placeholder: true
+    PendingPlanChange:
+      type: object
+      description: Respuesta PendingPlanChange
+      x-mind-placeholder: true
+    PlanChangeRequest:
+      type: object
+      description: Cuerpo de petición PlanChangeRequest
+      x-mind-placeholder: true
+    ProfileDetail:
+      type: object
+      description: Respuesta ProfileDetail
+      x-mind-placeholder: true
+    ProfileUpdateRequest:
+      type: object
+      description: Cuerpo de petición ProfileUpdateRequest
+      x-mind-placeholder: true
+    ProviderEventPage:
+      type: object
+      description: Respuesta ProviderEventPage
+      x-mind-placeholder: true
+    ReconciliationCorrectionList:
+      type: object
+      description: Respuesta ReconciliationCorrectionList
+      x-mind-placeholder: true
+    ReconciliationExceptionDetail:
+      type: object
+      description: Respuesta ReconciliationExceptionDetail
+      x-mind-placeholder: true
+    ReconciliationExceptionPage:
+      type: object
+      description: Respuesta ReconciliationExceptionPage
+      x-mind-placeholder: true
+    ReconciliationMatchDetail:
+      type: object
+      description: Respuesta ReconciliationMatchDetail
+      x-mind-placeholder: true
+    ReconciliationRunPage:
+      type: object
+      description: Respuesta ReconciliationRunPage
+      x-mind-placeholder: true
+    ReconciliationRunRequest:
+      type: object
+      description: Cuerpo de petición ReconciliationRunRequest
+      x-mind-placeholder: true
+    ReconciliationRunSummary:
+      type: object
+      description: Respuesta ReconciliationRunSummary
+      x-mind-placeholder: true
+    RecurringUnpaidReport:
+      type: object
+      description: Respuesta RecurringUnpaidReport
+      x-mind-placeholder: true
+    RefundRequestDetail:
+      type: object
+      description: Respuesta RefundRequestDetail
+      x-mind-placeholder: true
+    RefundRequestPage:
+      type: object
+      description: Respuesta RefundRequestPage
+      x-mind-placeholder: true
+    RefundRetryRequest:
+      type: object
+      description: Cuerpo de petición RefundRetryRequest
+      x-mind-placeholder: true
+    RefundStatusList:
+      type: object
+      description: Respuesta RefundStatusList
+      x-mind-placeholder: true
+    ReminderCaseDetail:
+      type: object
+      description: Respuesta ReminderCaseDetail
+      x-mind-placeholder: true
+    ReminderCasePage:
+      type: object
+      description: Respuesta ReminderCasePage
+      x-mind-placeholder: true
+    ReminderDetectorRunPage:
+      type: object
+      description: Respuesta ReminderDetectorRunPage
+      x-mind-placeholder: true
+    ReminderDetectorRunSummary:
+      type: object
+      description: Respuesta ReminderDetectorRunSummary
+      x-mind-placeholder: true
+    ReminderImpactPreview:
+      type: object
+      description: Respuesta ReminderImpactPreview
+      x-mind-placeholder: true
+    ReminderScheduleDraft:
+      type: object
+      description: Cuerpo de petición ReminderScheduleDraft
+      x-mind-placeholder: true
+    ReminderScheduleVersion:
+      type: object
+      description: Respuesta ReminderScheduleVersion
+      x-mind-placeholder: true
+    ReminderScheduleVersionList:
+      type: object
+      description: Respuesta ReminderScheduleVersionList
+      x-mind-placeholder: true
+    ReminderScheduleVersionRequest:
+      type: object
+      description: Cuerpo de petición ReminderScheduleVersionRequest
+      x-mind-placeholder: true
+    ResendRunPage:
+      type: object
+      description: Respuesta ResendRunPage
+      x-mind-placeholder: true
+    RetentionRunPage:
+      type: object
+      description: Respuesta RetentionRunPage
+      x-mind-placeholder: true
+    RetentionRunRequest:
+      type: object
+      description: Cuerpo de petición RetentionRunRequest
+      x-mind-placeholder: true
+    RetentionRunSummary:
+      type: object
+      description: Respuesta RetentionRunSummary
+      x-mind-placeholder: true
+    RetryCalendarPreview:
+      type: object
+      description: Respuesta RetryCalendarPreview
+      x-mind-placeholder: true
+    RetryPolicyDraft:
+      type: object
+      description: Cuerpo de petición RetryPolicyDraft
+      x-mind-placeholder: true
+    RetryPolicyList:
+      type: object
+      description: Respuesta RetryPolicyList
+      x-mind-placeholder: true
+    RetryPolicyVersion:
+      type: object
+      description: Respuesta RetryPolicyVersion
+      x-mind-placeholder: true
+    RetryPolicyVersionRequest:
+      type: object
+      description: Cuerpo de petición RetryPolicyVersionRequest
+      x-mind-placeholder: true
+    ScaConfirmationRequest:
+      type: object
+      description: Cuerpo de petición ScaConfirmationRequest
+      x-mind-placeholder: true
+    SessionList:
+      type: object
+      description: Respuesta SessionList
+      x-mind-placeholder: true
+    SessionResponse:
+      type: object
+      description: Respuesta SessionResponse
+      x-mind-placeholder: true
+    SessionRevocationResult:
+      type: object
+      description: Respuesta SessionRevocationResult
+      x-mind-placeholder: true
+    SmsConfigDraft:
+      type: object
+      description: Cuerpo de petición SmsConfigDraft
+      x-mind-placeholder: true
+    SmsConfigVersionRequest:
+      type: object
+      description: Cuerpo de petición SmsConfigVersionRequest
+      x-mind-placeholder: true
+    SmsConfigView:
+      type: object
+      description: Respuesta SmsConfigView
+      x-mind-placeholder: true
+    SmsDeliveryReport:
+      type: object
+      description: Cuerpo de petición SmsDeliveryReport
+      x-mind-placeholder: true
+    SmsDispatchPage:
+      type: object
+      description: Respuesta SmsDispatchPage
+      x-mind-placeholder: true
+    SmsTemplateList:
+      type: object
+      description: Respuesta SmsTemplateList
+      x-mind-placeholder: true
+    SmsTemplateTestRequest:
+      type: object
+      description: Cuerpo de petición SmsTemplateTestRequest
+      x-mind-placeholder: true
+    SmsTemplateUpdateRequest:
+      type: object
+      description: Cuerpo de petición SmsTemplateUpdateRequest
+      x-mind-placeholder: true
+    SmsTemplateVersion:
+      type: object
+      description: Respuesta SmsTemplateVersion
+      x-mind-placeholder: true
+    SmsValidationResult:
+      type: object
+      description: Respuesta SmsValidationResult
+      x-mind-placeholder: true
+    SmtpConfigDraft:
+      type: object
+      description: Cuerpo de petición SmtpConfigDraft
+      x-mind-placeholder: true
+    SmtpConfigVersionRequest:
+      type: object
+      description: Cuerpo de petición SmtpConfigVersionRequest
+      x-mind-placeholder: true
+    SmtpConfigView:
+      type: object
+      description: Respuesta SmtpConfigView
+      x-mind-placeholder: true
+    SmtpValidationResult:
+      type: object
+      description: Respuesta SmtpValidationResult
+      x-mind-placeholder: true
+    SubscriptionCreateRequest:
+      type: object
+      description: Cuerpo de petición SubscriptionCreateRequest
+      x-mind-placeholder: true
+    SubscriptionCreated:
+      type: object
+      description: Respuesta SubscriptionCreated
+      x-mind-placeholder: true
+    SubscriptionDashboard:
+      type: object
+      description: Respuesta SubscriptionDashboard
+      x-mind-placeholder: true
+    SubscriptionPlanList:
+      type: object
+      description: Respuesta SubscriptionPlanList
+      x-mind-placeholder: true
+    SubscriptionSummary:
+      type: object
+      description: Respuesta SubscriptionSummary
+      x-mind-placeholder: true
+    TemplateRestoreRequest:
+      type: object
+      description: Cuerpo de petición TemplateRestoreRequest
+      x-mind-placeholder: true
+    TestSendResult:
+      type: object
+      description: Respuesta TestSendResult
+      x-mind-placeholder: true
+    TransactionEventTimeline:
+      type: object
+      description: Respuesta TransactionEventTimeline
+      x-mind-placeholder: true
+    UserActivityReport:
+      type: object
+      description: Respuesta UserActivityReport
+      x-mind-placeholder: true
+    UserAvailabilityResponse:
+      type: object
+      description: Respuesta UserAvailabilityResponse
+      x-mind-placeholder: true
+    UserNfcAccessDetail:
+      type: object
+      description: Respuesta UserNfcAccessDetail
+      x-mind-placeholder: true
+    UserRegistrationRequest:
+      type: object
+      description: Cuerpo de petición UserRegistrationRequest
+      x-mind-placeholder: true
+    UserRegistrationResponse:
+      type: object
+      description: Respuesta UserRegistrationResponse
+      x-mind-placeholder: true
+    WebhookAck:
+      type: object
+      description: Respuesta WebhookAck
+      x-mind-placeholder: true
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT de acceso. Los scopes son códigos ROL-NNN del catálogo de roles.
