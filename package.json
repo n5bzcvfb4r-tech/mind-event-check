@@ -8,7 +8,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "node --test tests/",
+    "test": "node --test",
     "test:events": "node --test tests/event-validation.test.js",
     "test:components": "node --test tests/component-validation.test.js",
     "test:schemas": "node --test tests/schema-validation.test.js"
