@@ -1,0 +1,58 @@
+{
+  "type": "record",
+  "name": "RefundFailed",
+  "namespace": "com.mapfre.gymusers.events.reembolsos",
+  "doc": "Payload del evento RefundFailed (EVT-013) que materializa REQ-089 (RN 9: toda orden de reembolso que alcanza el estado FAILED notifica su estado final a MOD-002). Los cuatro primeros campos (event_id, event_type, timestamp, correlation_id) son el sobre canónico definido en sources/schemas/common/event_envelope.avsc.",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "UUID que identifica de forma única el evento de dominio emitido (RN REQ-049). Obligatorio."
+    },
+    {
+      "name": "event_type",
+      "type": "string",
+      "doc": "Tipo canónico del evento. Valor fijo: refund.failed. Obligatorio."
+    },
+    {
+      "name": "timestamp",
+      "type": "string",
+      "doc": "Instante de emisión del evento en ISO-8601 UTC con sufijo Z. Obligatorio."
+    },
+    {
+      "name": "correlation_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "UUID de correlación heredado del cobro original, propagado a reintentos, ledger y reembolsos. Obligatorio."
+    },
+    {
+      "name": "refund_request_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "Orden de reembolso que falla (refund_requests.refund_request_id)."
+    },
+    {
+      "name": "cancellation_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "Clave de idempotencia de la orden de reembolso (AC-REE-02)."
+    },
+    {
+      "name": "failure_code",
+      "type": {
+        "type": "enum",
+        "name": "RefundFailureCode",
+        "symbols": [
+          "refund_method_mismatch",
+          "refund_amount_exceeds_original",
+          "original_transaction_not_found",
+          "original_transaction_not_refundable",
+          "PAYMENT_REFERENCE_UNAVAILABLE"
+        ]
+      },
+      "doc": "Causa del fallo. Los cuatro primeros símbolos son los códigos de error de validación de AC-REE-03; el quinto es el manual_review_reason de AC-REE-05."
+    },
+    {
+      "name": "failure_message",
+      "type": "string",
+      "doc": "Mensaje de fallo SANEADO para el usuario y la traza. Nunca token, PAN, CVV ni IBAN completo (REQ-084 / AC-DEV-10)."
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "type": "record",
+  "name": "RefundCompleted",
+  "namespace": "com.mapfre.gymusers.events.reembolsos",
+  "doc": "Payload del evento RefundCompleted (EVT-012) que materializa REQ-089 / AC-REE-06: sin asiento REFUND en transaction_ledger no hay orden en estado COMPLETED. Los cuatro primeros campos (event_id, event_type, timestamp, correlation_id) son el sobre canónico definido en sources/schemas/common/event_envelope.avsc.",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "UUID que identifica de forma única el evento de dominio emitido (RN REQ-049). Obligatorio."
+    },
+    {
+      "name": "event_type",
+      "type": "string",
+      "doc": "Tipo canónico del evento. Valor fijo: refund.completed. Obligatorio."
+    },
+    {
+      "name": "timestamp",
+      "type": "string",
+      "doc": "Instante de emisión del evento en ISO-8601 UTC con sufijo Z. Obligatorio."
+    },
+    {
+      "name": "correlation_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "UUID de correlación heredado del cobro original (mismo valor físico que transaction_ledger.correlation_id en T.5), propagado a reintentos, ledger y reembolsos. Obligatorio."
+    },
+    {
+      "name": "refund_request_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "Orden de reembolso que se completa (refund_requests.refund_request_id)."
+    },
+    {
+      "name": "cancellation_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "Clave de idempotencia de la orden de reembolso (AC-REE-02)."
+    },
+    {
+      "name": "original_transaction_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "Transacción de cobro original que se reembolsa."
+    },
+    {
+      "name": "user_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "Titular de la transacción original."
+    },
+    {
+      "name": "payment_method",
+      "type": {
+        "type": "enum",
+        "name": "RefundPaymentMethod",
+        "symbols": ["BANK_TRANSFER", "PAYPAL", "CARD"]
+      },
+      "doc": "Método de reembolso derivado del asiento original. MISMOS valores físicos que transaction_ledger.payment_method en T.5."
+    },
+    {
+      "name": "refund_amount_cents",
+      "type": "int",
+      "doc": "Importe reembolsado en céntimos, entero positivo."
+    },
+    {
+      "name": "currency",
+      "type": "string",
+      "doc": "Divisa ISO-4217 de 3 caracteres, EUR."
+    },
+    {
+      "name": "refund_ledger_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "Asiento REFUND registrado en transaction_ledger. Obligatorio: sin él la orden no puede pasar a COMPLETED (AC-REE-06)."
+    },
+    {
+      "name": "completed_at",
+      "type": "string",
+      "doc": "Instante de finalización del reembolso en ISO-8601 UTC con sufijo Z."
+    }
+  ]
+}
