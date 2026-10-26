@@ -1,0 +1,74 @@
+{
+  "type": "record",
+  "name": "SubscriptionCancelled",
+  "namespace": "com.mapfre.gymusers.events.suscripciones",
+  "doc": "Payload del evento SubscriptionCancelled (EVT-011) que materializa REQ-101 / AC-BAJ-06. Los cuatro primeros campos (event_id, event_type, timestamp, correlation_id) son el sobre canónico definido en sources/schemas/common/event_envelope.avsc; los campos de negocio usan los nombres físicos de las tablas subscriptions y subscription_cancellations de T.5. El payload NO contiene ningún dato de pago: ni PAN, ni token, ni IBAN, ni last_four_digits, ni método de pago.",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "UUID que identifica de forma única el evento de dominio emitido (RN REQ-049). Obligatorio."
+    },
+    {
+      "name": "event_type",
+      "type": "string",
+      "doc": "Tipo canónico del evento. Valor fijo: subscription.cancelled. Obligatorio."
+    },
+    {
+      "name": "timestamp",
+      "type": "string",
+      "doc": "Instante de emisión del evento en ISO-8601 UTC con sufijo Z. Transporta subscriptions.cancelled_at. Obligatorio."
+    },
+    {
+      "name": "correlation_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "UUID de correlación de la baja, propagado al cierre del ciclo de impago y al expediente de la suscripción. Obligatorio."
+    },
+    {
+      "name": "subscription_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "Suscripción dada de baja (subscriptions.subscription_id). Obligatorio."
+    },
+    {
+      "name": "user_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "Socio titular de la suscripción dada de baja (subscriptions.user_id). Obligatorio."
+    },
+    {
+      "name": "subscription_status",
+      "type": {
+        "type": "enum",
+        "name": "SubscriptionStatusCancelled",
+        "doc": "Estado de la suscripción tras la baja (subscriptions.subscription_status). Enumerado con UN SOLO símbolo a propósito: este evento solo existe para una baja confirmada, por lo que el propio esquema rechaza cualquier otro valor de subscriptions.subscription_status.",
+        "symbols": ["CANCELLED"]
+      },
+      "doc": "Estado resultante de la suscripción (subscriptions.subscription_status). Único valor admitido: CANCELLED; el enumerado de un solo símbolo hace que el esquema rechace cualquier otro estado, porque el evento solo se emite ante una baja confirmada."
+    },
+    {
+      "name": "cancelled_at",
+      "type": "string",
+      "doc": "Fecha y hora de la baja (subscriptions.cancelled_at) en ISO-8601 UTC con sufijo Z. Obligatorio e inmutable (REQ-101 / AC-BAJ-02)."
+    },
+    {
+      "name": "cancellation_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "Identificador de la baja registrada (subscription_cancellations.cancellation_id). Clave de idempotencia de la baja."
+    },
+    {
+      "name": "close_reason",
+      "type": {
+        "type": "enum",
+        "name": "DunningCloseReasonUserCancelled",
+        "doc": "Motivo de cierre aplicado al ciclo de impago abierto (dunning_cycles.close_reason). Único símbolo: USER_CANCELLED.",
+        "symbols": ["USER_CANCELLED"]
+      },
+      "doc": "Motivo de cierre que ARC-033 aplica al ciclo de impago abierto (dunning_cycles.close_reason). Según REQ-126 es el valor que impide abrir caso de aviso (AC-BAJ-06)."
+    },
+    {
+      "name": "billing_period_start",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Opcional. Fecha `YYYY-MM-DD` del inicio del periodo del ciclo de impago abierto (dunning_cycles.billing_period_start), si lo hay; nulo cuando no hay ciclo abierto."
+    }
+  ]
+}

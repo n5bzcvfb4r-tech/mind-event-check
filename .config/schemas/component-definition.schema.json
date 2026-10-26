@@ -87,13 +87,10 @@
           },
           "outbox": {
             "type": "object",
-            "description": "Persistencia transaccional del evento en la tabla de outbox y política de reentrega del relay cuando el consumidor no está disponible (REQ-038).",
+            "description": "Persistencia transaccional del evento en la tabla de outbox (T.5: event_outbox). Admite dos perfiles: política de reentrega del relay (REQ-038: max_attempts, attempt_interval_seconds, escalation_target) y política ante fallo de publicación (AC-BAJ-06: retry_from_outbox, rollback_on_publish_failure).",
             "additionalProperties": false,
             "required": [
-              "table",
-              "max_attempts",
-              "attempt_interval_seconds",
-              "escalation_target"
+              "table"
             ],
             "properties": {
               "table": {
@@ -122,8 +119,31 @@
               "persist_until_delivered": {
                 "type": "boolean",
                 "description": "El evento permanece en event_outbox hasta que se confirma la entrega."
+              },
+              "retry_from_outbox": {
+                "type": "boolean",
+                "description": "Si es true, cuando la publicación falla el evento se reintenta desde el outbox hasta entregarse."
+              },
+              "rollback_on_publish_failure": {
+                "type": "boolean",
+                "description": "AC-BAJ-06: con false, un fallo de publicación NO revierte la operación de negocio ya confirmada (la baja permanece registrada y solo se reintenta el envío)."
               }
-            }
+            },
+            "anyOf": [
+              {
+                "required": [
+                  "max_attempts",
+                  "attempt_interval_seconds",
+                  "escalation_target"
+                ]
+              },
+              {
+                "required": [
+                  "retry_from_outbox",
+                  "rollback_on_publish_failure"
+                ]
+              }
+            ]
           },
           "max_events_per_invoice": {
             "type": "integer",
@@ -141,6 +161,56 @@
               "type": "string",
               "pattern": "^[a-z][a-z0-9_]*$"
             }
+          },
+          "component": {
+            "type": "string",
+            "description": "Componente concreto (ARC-xxx) que ejecuta esta operación sobre el canal, cuando el fichero describe el mapa pub/sub completo de un canal y reúne productor y consumidor en un mismo documento. Ejemplo: ARC-031 publica SubscriptionCancelled y ARC-033 lo consume.",
+            "pattern": "^ARC-[0-9]{3}$"
+          },
+          "publish_after_commit": {
+            "type": "boolean",
+            "description": "Si es true, el evento solo se publica TRAS el commit de la transacción que lo origina (patrón outbox transaccional). AC-BAJ-06: SubscriptionCancelled se publica después de confirmar la baja, nunca dentro de la transacción."
+          },
+          "close_reason": {
+            "type": "string",
+            "description": "Motivo de cierre que el consumidor aplica al recibir el evento (dunning_cycles.close_reason). REQ-126: USER_CANCELLED es el motivo que impide abrir caso de aviso.",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          },
+          "idempotency_key": {
+            "type": "array",
+            "description": "Campos del payload que forman la clave de idempotencia de la ENTREGA en este consumidor: dos entregas con la misma combinación de valores son el mismo hecho de negocio y no producen un segundo efecto.",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$"
+            }
+          },
+          "trigger_source": {
+            "type": "string",
+            "description": "Origen que queda registrado en el caso abierto por esta suscripción. Valores del enum físico de T.5 payment_reminder_cases.trigger_source.",
+            "enum": [
+              "DETECTOR",
+              "INVOICE_UNPAID"
+            ]
+          },
+          "on_first_delivery": {
+            "type": "string",
+            "description": "Efecto de la PRIMERA entrega sobre una factura sin caso (AC-IMP-04): abre el caso de aviso.",
+            "enum": [
+              "open_case"
+            ]
+          },
+          "on_duplicate": {
+            "type": "string",
+            "description": "Efecto de una entrega repetida sobre una factura que ya tiene caso OPEN (AC-IMP-04): el evento se anota y los hitos NO se replanifican. Única semántica declarada por arquitectura.",
+            "enum": [
+              "annotate_only"
+            ]
+          },
+          "receives_payment_data": {
+            "type": "boolean",
+            "description": "Declara si el componente recibe datos de pago en el payload de este evento. En InvoiceUnpaid es false por AC-EST-04 / AC-EST-09: el esquema no los tiene."
           }
         }
       }
