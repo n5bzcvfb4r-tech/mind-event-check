@@ -1,0 +1,19 @@
+{
+  "component": "ARC-024",
+  "name": "modulo-pagos",
+  "description": "Módulo de pagos: publica en el bus de eventos la autorización de cobro para que facturación emita la factura (REQ-049).",
+  "channel": "pagos.cobros.autorizado.v1",
+  "role": "producer",
+  "events": [
+    {
+      "event_code": "EVT-003",
+      "name": "PaymentAuthorized",
+      "topic": "pagos.cobros.autorizado.v1",
+      "operation": "publish"
+    }
+  ],
+  "owner": { "team": "ARC-023", "contact": "arquitectura.eventos@mapfre.com" },
+  "payload_constraints": {
+    "forbidden_field_names": ["pan", "card_number", "cvv", "cvc", "token", "card_token", "access_token", "iban", "bank_account_number"]
+  }
+}

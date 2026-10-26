@@ -1,0 +1,34 @@
+{
+  "name": "PaymentAuthorized",
+  "event_code": "EVT-003",
+  "event_type": "payment.authorized",
+  "topic": "pagos.cobros.autorizado.v1",
+  "version": 1,
+  "description": "Se emite cuando una fila de payment_transactions pasa a AUTHORIZED o CAPTURED. Lo consume el módulo de facturación para emitir la factura y registrar el ingreso (REQ-049).",
+  "envelope_schema": "sources/schemas/common/event_envelope.avsc",
+  "payload_schema": "sources/schemas/payment_authorized.avsc",
+  "producer": "ARC-024",
+  "consumers": ["ARC-024"],
+  "delivery": {
+    "retries": 3,
+    "backoff": { "strategy": "exponential", "intervals_seconds": [1, 2, 4] },
+    "timeout_s": 5
+  },
+  "payload": {
+    "required_fields": [
+      "event_id",
+      "event_type",
+      "timestamp",
+      "correlation_id",
+      "user_id",
+      "transaction_id",
+      "gateway_id",
+      "gateway_name",
+      "payment_method",
+      "subscription_mode",
+      "amount_cents",
+      "currency"
+    ],
+    "optional_fields": ["invoice_id", "cardholder_name", "last_four_digits"]
+  }
+}

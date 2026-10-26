@@ -1,0 +1,22 @@
+{
+  "name": "mind-event-check",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Contratos de eventos (envelope canónico, definiciones de eventos y componentes, esquemas Avro) — arquetipo event",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test",
+    "test:events": "node --test tests/event-validation.test.js",
+    "test:components": "node --test tests/component-validation.test.js",
+    "test:schemas": "node --test tests/schema-validation.test.js"
+  },
+  "devDependencies": {
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "avsc": "5.7.9",
+    "glob": "11.1.0"
+  }
+}

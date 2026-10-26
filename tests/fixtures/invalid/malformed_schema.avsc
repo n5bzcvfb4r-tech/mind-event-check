@@ -1,0 +1,6 @@
+{
+  "type": "record",
+  "name": "MalformedEnvelope",
+  "fields": [
+    { "name": "event_id", "type": "string" },
+  ]

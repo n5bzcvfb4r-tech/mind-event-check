@@ -1,0 +1,129 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mapfre.com/mind/schemas/component-definition.schema.json",
+  "title": "Component Definition",
+  "description": "Definición de un componente arquitectónico (ARC-xxx) del mapa de eventos (sources/components/*.json): canal declarado, rol en el bus (productor y/o consumidor), eventos que publica o a los que se suscribe y equipo propietario. Puede declarar restricciones de payload con los nombres de campo prohibidos por PCI/GDPR.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "component",
+    "name",
+    "description",
+    "channel",
+    "role",
+    "events",
+    "owner"
+  ],
+  "properties": {
+    "component": {
+      "type": "string",
+      "description": "Código corporativo del componente, p. ej. ARC-001.",
+      "pattern": "^ARC-[0-9]{3}$"
+    },
+    "name": {
+      "type": "string",
+      "description": "Nombre técnico del componente en kebab-case.",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "minLength": 3,
+      "maxLength": 50
+    },
+    "description": {
+      "type": "string",
+      "description": "Descripción funcional del componente.",
+      "minLength": 10,
+      "maxLength": 500
+    },
+    "channel": {
+      "type": "string",
+      "description": "Canal declarado del componente en asyncapi.yaml, versionado al final, p. ej. pagos.cobros.autorizado.v1. Un componente sin canal no es válido.",
+      "pattern": "^[a-z0-9]+(\\.[a-z0-9-]+)+\\.v[0-9]+$"
+    },
+    "role": {
+      "type": "string",
+      "description": "Rol del componente respecto al bus de eventos.",
+      "enum": [
+        "producer",
+        "consumer",
+        "producer-consumer"
+      ]
+    },
+    "events": {
+      "type": "array",
+      "description": "Eventos que el componente publica o consume; al menos uno y sin duplicados.",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "event_code",
+          "name",
+          "topic",
+          "operation"
+        ],
+        "properties": {
+          "event_code": {
+            "type": "string",
+            "description": "Código corporativo del evento, p. ej. EVT-001.",
+            "pattern": "^EVT-[0-9]{3}$"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nombre del evento en PascalCase, p. ej. PaymentAuthorized.",
+            "pattern": "^[A-Z][A-Za-z0-9]+$"
+          },
+          "topic": {
+            "type": "string",
+            "description": "Canal del evento en asyncapi.yaml, versionado al final.",
+            "pattern": "^[a-z0-9]+(\\.[a-z0-9-]+)+\\.v[0-9]+$"
+          },
+          "operation": {
+            "type": "string",
+            "description": "Operación del componente sobre el canal.",
+            "enum": [
+              "publish",
+              "subscribe"
+            ]
+          }
+        }
+      }
+    },
+    "owner": {
+      "type": "object",
+      "description": "Equipo propietario del componente.",
+      "additionalProperties": false,
+      "required": [
+        "team",
+        "contact"
+      ],
+      "properties": {
+        "team": {
+          "type": "string",
+          "description": "Código del equipo propietario, p. ej. ARC-001.",
+          "pattern": "^ARC-[0-9]{3}$"
+        },
+        "contact": {
+          "type": "string",
+          "description": "Correo electrónico de contacto del equipo propietario.",
+          "format": "email"
+        }
+      }
+    },
+    "payload_constraints": {
+      "type": "object",
+      "description": "Restricciones opcionales sobre los payloads manejados por el componente.",
+      "additionalProperties": false,
+      "properties": {
+        "forbidden_field_names": {
+          "type": "array",
+          "description": "Nombres de campo prohibidos por PCI/GDPR en los payloads del componente: PAN (número de tarjeta completo), CVV/CVC, tokens de autenticación o de tarjeta e IBAN / número de cuenta completo. Se admiten variantes truncadas como last_four_digits, card_last4 o iban_last4.",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^([Pp][Aa][Nn]|[Cc][Aa][Rr][Dd]_?[Nn][Uu][Mm][Bb][Ee][Rr]|[Ff][Uu][Ll][Ll]_[Pp][Aa][Nn]|[Cc][Aa][Rr][Dd]_[Pp][Aa][Nn]|[Cc][Vv][VvCc]2?|[Cc][Vv][Cc]|[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy]_[Cc][Oo][Dd][Ee]|[Tt][Oo][Kk][Ee][Nn]|[Cc][Aa][Rr][Dd]_[Tt][Oo][Kk][Ee][Nn]|[Aa][Cc][Cc][Ee][Ss][Ss]_[Tt][Oo][Kk][Ee][Nn]|[Rr][Ee][Ff][Rr][Ee][Ss][Hh]_[Tt][Oo][Kk][Ee][Nn]|[Aa][Uu][Tt][Hh]_[Tt][Oo][Kk][Ee][Nn]|[Aa][Pp][Ii]_?[Kk][Ee][Yy]|[Ii][Bb][Aa][Nn]|[Ff][Uu][Ll][Ll]_[Ii][Bb][Aa][Nn]|[Bb][Aa][Nn][Kk]_[Aa][Cc][Cc][Oo][Uu][Nn][Tt]_[Nn][Uu][Mm][Bb][Ee][Rr]|[Aa][Cc][Cc][Oo][Uu][Nn][Tt]_[Nn][Uu][Mm][Bb][Ee][Rr])$"
+          }
+        }
+      }
+    }
+  }
+}
