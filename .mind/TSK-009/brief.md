@@ -1492,3 +1492,21 @@ Limitaciones declaradas:
 
 ## REWORK — feedback del revisor (atiéndelo TODO)
 - (mind-platform) MIND (plataforma): este PR tiene **conflictos de merge** con `main` (`mergeable_state=dirty`). Suele pasar al mergear otro PR en paralelo que tocó ficheros compartidos (routers, `__init__`, deps…). Haz rebase o merge de `main` en tu rama, resuelve los conflictos sin cambiar el alcance de la tarea, deja build/tests verdes y vuelve a empujar. Preferible mergear PRs en orden del DAG (uno a uno) para reducir este caso.
+
+## Código ya presente en la zona (zone-extend) — OBLIGATORIO
+
+En el tip actual del workspace YA hay código bajo tus `zone_paths` (típicamente de una TSK predecesora mergeada). **Léelo antes de escribir.**
+
+Ficheros presentes (muestra):
+- `sources/schemas/payment_processed.avsc`
+- `sources/schemas/payment_authorized.avsc`
+- `sources/schemas/payment_failed.avsc`
+- `sources/events/payment_processed.json`
+- `sources/events/payment_authorized.json`
+- `sources/events/payment_failed.json`
+- `sources/components/mod003_payments_producer.json`
+
+Disciplina:
+1. **EDIT/EXTIENDE** símbolos existentes (`class`/`def`/exports) — **PROHIBIDO** una segunda declaración con el mismo nombre en el mismo fichero.
+2. Añade routers/handlers nuevos en ficheros dedicados o ampliando el existente sin redefinir tipos ya presentes.
+3. Si el DoD pide API pública sobre el mismo dominio, reutiliza servicios/modelos del CRUD previo; no copies otra `MembershipPlanService`.
