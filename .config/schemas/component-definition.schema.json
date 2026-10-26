@@ -85,6 +85,46 @@
               "subscribe"
             ]
           },
+          "outbox": {
+            "type": "object",
+            "description": "Persistencia transaccional del evento en la tabla de outbox y política de reentrega del relay cuando el consumidor no está disponible (REQ-038).",
+            "additionalProperties": false,
+            "required": [
+              "table",
+              "max_attempts",
+              "attempt_interval_seconds",
+              "escalation_target"
+            ],
+            "properties": {
+              "table": {
+                "type": "string",
+                "description": "Nombre físico de la tabla de outbox (T.5: event_outbox).",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "max_attempts": {
+                "type": "integer",
+                "description": "Intentos de entrega del relay antes de escalar (RN REQ-038: como máximo 10).",
+                "minimum": 1,
+                "maximum": 10
+              },
+              "attempt_interval_seconds": {
+                "type": "number",
+                "description": "Intervalo fijo entre intentos del relay en segundos (REQ-038: cada 30 s).",
+                "exclusiveMinimum": 0
+              },
+              "escalation_target": {
+                "type": "string",
+                "description": "Destinatario del escalado cuando se agotan los intentos.",
+                "enum": [
+                  "ADMIN"
+                ]
+              },
+              "persist_until_delivered": {
+                "type": "boolean",
+                "description": "El evento permanece en event_outbox hasta que se confirma la entrega."
+              }
+            }
+          },
           "max_events_per_invoice": {
             "type": "integer",
             "description": "Número máximo de eventos de este tipo que el componente publica por factura. RN REQ-119: por cada factura se publica como máximo un evento InvoiceUnpaid.",
@@ -128,6 +168,42 @@
             "type": "string",
             "description": "Motivo de cierre que el consumidor aplica al recibir el evento (dunning_cycles.close_reason). REQ-126: USER_CANCELLED es el motivo que impide abrir caso de aviso.",
             "pattern": "^[A-Z][A-Z0-9_]*$"
+          },
+          "idempotency_key": {
+            "type": "array",
+            "description": "Campos del payload que forman la clave de idempotencia de la ENTREGA en este consumidor: dos entregas con la misma combinación de valores son el mismo hecho de negocio y no producen un segundo efecto.",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$"
+            }
+          },
+          "trigger_source": {
+            "type": "string",
+            "description": "Origen que queda registrado en el caso abierto por esta suscripción. Valores del enum físico de T.5 payment_reminder_cases.trigger_source.",
+            "enum": [
+              "DETECTOR",
+              "INVOICE_UNPAID"
+            ]
+          },
+          "on_first_delivery": {
+            "type": "string",
+            "description": "Efecto de la PRIMERA entrega sobre una factura sin caso (AC-IMP-04): abre el caso de aviso.",
+            "enum": [
+              "open_case"
+            ]
+          },
+          "on_duplicate": {
+            "type": "string",
+            "description": "Efecto de una entrega repetida sobre una factura que ya tiene caso OPEN (AC-IMP-04): el evento se anota y los hitos NO se replanifican. Única semántica declarada por arquitectura.",
+            "enum": [
+              "annotate_only"
+            ]
+          },
+          "receives_payment_data": {
+            "type": "boolean",
+            "description": "Declara si el componente recibe datos de pago en el payload de este evento. En InvoiceUnpaid es false por AC-EST-04 / AC-EST-09: el esquema no los tiene."
           }
         }
       }
@@ -166,6 +242,59 @@
             "type": "string",
             "pattern": "^([Pp][Aa][Nn]|[Cc][Aa][Rr][Dd]_?[Nn][Uu][Mm][Bb][Ee][Rr]|[Ff][Uu][Ll][Ll]_[Pp][Aa][Nn]|[Cc][Aa][Rr][Dd]_[Pp][Aa][Nn]|[Cc][Vv][VvCc]2?|[Cc][Vv][Cc]|[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy]_[Cc][Oo][Dd][Ee]|[Tt][Oo][Kk][Ee][Nn]|[Cc][Aa][Rr][Dd]_[Tt][Oo][Kk][Ee][Nn]|[Aa][Cc][Cc][Ee][Ss][Ss]_[Tt][Oo][Kk][Ee][Nn]|[Rr][Ee][Ff][Rr][Ee][Ss][Hh]_[Tt][Oo][Kk][Ee][Nn]|[Aa][Uu][Tt][Hh]_[Tt][Oo][Kk][Ee][Nn]|[Aa][Pp][Ii]_?[Kk][Ee][Yy]|[Ii][Bb][Aa][Nn]|[Ff][Uu][Ll][Ll]_[Ii][Bb][Aa][Nn]|[Bb][Aa][Nn][Kk]_[Aa][Cc][Cc][Oo][Uu][Nn][Tt]_[Nn][Uu][Mm][Bb][Ee][Rr]|[Aa][Cc][Cc][Oo][Uu][Nn][Tt]_[Nn][Uu][Mm][Bb][Ee][Rr])$"
           }
+        }
+      }
+    },
+    "delivery": {
+      "type": "object",
+      "description": "Política de entrega que el componente productor aplica a TODOS los canales que declara: reintentos, backoff y timeout (REQ-049).",
+      "additionalProperties": false,
+      "required": [
+        "retries",
+        "backoff",
+        "timeout_s"
+      ],
+      "properties": {
+        "retries": {
+          "type": "integer",
+          "description": "Número de reintentos antes de enviar a la cola de descarte.",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "backoff": {
+          "type": "object",
+          "description": "Estrategia de espera entre reintentos.",
+          "additionalProperties": false,
+          "required": [
+            "strategy",
+            "intervals_seconds"
+          ],
+          "properties": {
+            "strategy": {
+              "type": "string",
+              "description": "Estrategia de backoff aplicada entre reintentos.",
+              "enum": [
+                "exponential",
+                "linear",
+                "fixed"
+              ]
+            },
+            "intervals_seconds": {
+              "type": "array",
+              "description": "Intervalos de espera en segundos; todos estrictamente positivos.",
+              "minItems": 1,
+              "items": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              }
+            }
+          }
+        },
+        "timeout_s": {
+          "type": "number",
+          "description": "Timeout de entrega en segundos (mayor que 0 y como máximo 60).",
+          "exclusiveMinimum": 0,
+          "maximum": 60
         }
       }
     }

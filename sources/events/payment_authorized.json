@@ -7,12 +7,16 @@
   "description": "Se emite cuando una fila de payment_transactions pasa a AUTHORIZED o CAPTURED. Lo consume el módulo de facturación para emitir la factura y registrar el ingreso (REQ-049).",
   "envelope_schema": "sources/schemas/common/event_envelope.avsc",
   "payload_schema": "sources/schemas/payment_authorized.avsc",
-  "producer": "ARC-024",
+  "producer": "ARC-033",
   "consumers": ["ARC-024"],
   "delivery": {
     "retries": 3,
     "backoff": { "strategy": "exponential", "intervals_seconds": [1, 2, 4] },
     "timeout_s": 5
+  },
+  "malformed_policy": {
+    "retryable": false,
+    "action": "DEAD_LETTER"
   },
   "payload": {
     "required_fields": [
@@ -29,6 +33,29 @@
       "amount_cents",
       "currency"
     ],
-    "optional_fields": ["invoice_id", "cardholder_name", "last_four_digits"]
+    "optional_fields": ["invoice_id", "cardholder_name", "last_four_digits"],
+    "field_constraints": [
+      { "field": "event_type", "type": "string", "enum": ["payment.authorized"] },
+      { "field": "amount_cents", "type": "integer", "minimum": 1 },
+      { "field": "currency", "type": "string", "length": 3 },
+      { "field": "last_four_digits", "type": "string", "length": 4, "pattern": "^[0-9]{4}$" }
+    ],
+    "example": {
+      "event_id": "7f1f5b3e-0a6c-4a0e-9a1b-2c3d4e5f6a7b",
+      "event_type": "payment.authorized",
+      "timestamp": "2026-10-26T10:35:00.000Z",
+      "correlation_id": "1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed",
+      "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "transaction_id": "9c858901-8a57-4791-81fe-4c455b099bc9",
+      "invoice_id": null,
+      "gateway_id": "ch_3Qd8xK2eZvKYlo2C0ZqFq1Ab",
+      "gateway_name": "STRIPE",
+      "payment_method": "CARD",
+      "subscription_mode": "MONTHLY",
+      "amount_cents": 4500,
+      "currency": "EUR",
+      "cardholder_name": "Ana Pérez Gil",
+      "last_four_digits": "0366"
+    }
   }
 }

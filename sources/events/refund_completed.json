@@ -1,0 +1,35 @@
+{
+  "name": "RefundCompleted",
+  "event_code": "EVT-012",
+  "event_type": "refund.completed",
+  "topic": "pagos.reembolsos.completado.v1",
+  "version": 1,
+  "description": "Se emite cuando una orden de refund_requests alcanza COMPLETED, es decir cuando el canal confirma la devolución y existe su asiento REFUND en transaction_ledger. Lo consume el módulo de facturación (MOD-002) para cerrar la baja (REQ-089, AC-REE-06).",
+  "envelope_schema": "sources/schemas/common/event_envelope.avsc",
+  "payload_schema": "sources/schemas/refund_completed.avsc",
+  "producer": "ARC-034",
+  "consumers": ["ARC-024"],
+  "delivery": {
+    "retries": 3,
+    "backoff": { "strategy": "exponential", "intervals_seconds": [1, 2, 4] },
+    "timeout_s": 5
+  },
+  "payload": {
+    "required_fields": [
+      "event_id",
+      "event_type",
+      "timestamp",
+      "correlation_id",
+      "refund_request_id",
+      "cancellation_id",
+      "original_transaction_id",
+      "user_id",
+      "payment_method",
+      "refund_amount_cents",
+      "currency",
+      "refund_ledger_id",
+      "completed_at"
+    ],
+    "optional_fields": []
+  }
+}

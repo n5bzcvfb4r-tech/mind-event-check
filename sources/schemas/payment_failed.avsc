@@ -1,0 +1,43 @@
+{
+  "type": "record",
+  "name": "PaymentFailed",
+  "namespace": "com.mapfre.gymusers.events.pagos",
+  "doc": "Payload del evento PaymentFailed (EVT-004). Los cuatro primeros campos (event_id, event_type, timestamp, correlation_id) son el sobre canónico definido en sources/schemas/common/event_envelope.avsc.",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "UUID que identifica de forma única el evento de dominio emitido (RN REQ-049). Obligatorio."
+    },
+    {
+      "name": "event_type",
+      "type": "string",
+      "doc": "Nombre canónico del tipo de evento en minúsculas y puntos, p. ej. payment.failed. Obligatorio."
+    },
+    {
+      "name": "timestamp",
+      "type": "string",
+      "doc": "Instante de emisión del evento en ISO-8601 UTC con sufijo Z, p. ej. 2026-10-26T10:35:00.000Z. Obligatorio."
+    },
+    {
+      "name": "correlation_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "UUID de correlación propagado a reintentos, ledger y reembolsos. Obligatorio."
+    },
+    {
+      "name": "user_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "Usuario asociado al cobro fallido. Obligatorio."
+    },
+    {
+      "name": "transaction_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "Transacción local fallida (payment_transactions.transaction_id). Obligatorio."
+    },
+    {
+      "name": "failure_code",
+      "type": "string",
+      "doc": "Código de fallo canónico YA NORMALIZADO contra el catálogo cat_payment_error_codes (nunca el código bruto del proveedor). Se transporta como cadena porque el catálogo se lee de base de datos y no se congela en un enum. Obligatorio."
+    }
+  ]
+}
