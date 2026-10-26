@@ -1,0 +1,44 @@
+{
+  "name": "PaymentFailed",
+  "event_code": "EVT-004",
+  "event_type": "payment.failed",
+  "topic": "pagos.cobros.fallido.v1",
+  "version": 1,
+  "description": "Se emite cuando una transacción de cobro termina en FAILED o DECLINED. Lo consume el módulo de facturación para registrar el impago. El failure_code viaja ya normalizado contra el catálogo cat_payment_error_codes (REQ-049).",
+  "envelope_schema": "sources/schemas/common/event_envelope.avsc",
+  "payload_schema": "sources/schemas/payment_failed.avsc",
+  "producer": "ARC-033",
+  "consumers": ["ARC-024"],
+  "delivery": {
+    "retries": 3,
+    "backoff": { "strategy": "exponential", "intervals_seconds": [1, 2, 4] },
+    "timeout_s": 5
+  },
+  "malformed_policy": {
+    "retryable": false,
+    "action": "DEAD_LETTER"
+  },
+  "payload": {
+    "required_fields": [
+      "event_id",
+      "event_type",
+      "timestamp",
+      "correlation_id",
+      "user_id",
+      "transaction_id",
+      "failure_code"
+    ],
+    "field_constraints": [
+      { "field": "event_type", "type": "string", "enum": ["payment.failed"] }
+    ],
+    "example": {
+      "event_id": "0f4c3b21-9d7e-4f8a-bb11-6a2d5c8e7f90",
+      "event_type": "payment.failed",
+      "timestamp": "2026-10-26T10:36:00.000Z",
+      "correlation_id": "1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed",
+      "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "transaction_id": "9c858901-8a57-4791-81fe-4c455b099bc9",
+      "failure_code": "CARD_DECLINED"
+    }
+  }
+}

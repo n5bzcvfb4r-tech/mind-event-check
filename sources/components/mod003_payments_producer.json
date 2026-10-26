@@ -1,0 +1,43 @@
+{
+  "component": "ARC-033",
+  "name": "mod003-pagos-productor",
+  "description": "MOD-003 (módulo de pagos): único productor de los eventos de resultado de cobro — PaymentAuthorized, PaymentFailed y PaymentProcessed — que consume MOD-002 (facturación) para emitir la factura o registrar el impago (REQ-038 y REQ-049).",
+  "channel": "pagos.cobros.procesado.v1",
+  "role": "producer",
+  "delivery": {
+    "retries": 3,
+    "backoff": { "strategy": "exponential", "intervals_seconds": [1, 2, 4] },
+    "timeout_s": 5
+  },
+  "events": [
+    {
+      "event_code": "EVT-003",
+      "name": "PaymentAuthorized",
+      "topic": "pagos.cobros.autorizado.v1",
+      "operation": "publish"
+    },
+    {
+      "event_code": "EVT-004",
+      "name": "PaymentFailed",
+      "topic": "pagos.cobros.fallido.v1",
+      "operation": "publish"
+    },
+    {
+      "event_code": "EVT-005",
+      "name": "PaymentProcessed",
+      "topic": "pagos.cobros.procesado.v1",
+      "operation": "publish",
+      "outbox": {
+        "table": "event_outbox",
+        "max_attempts": 10,
+        "attempt_interval_seconds": 30,
+        "escalation_target": "ADMIN",
+        "persist_until_delivered": true
+      }
+    }
+  ],
+  "owner": { "team": "ARC-023", "contact": "arquitectura.eventos@mapfre.com" },
+  "payload_constraints": {
+    "forbidden_field_names": ["pan", "card_number", "cvv", "cvc", "token", "card_token", "access_token", "iban", "bank_account_number"]
+  }
+}
