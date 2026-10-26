@@ -8,7 +8,7 @@
   "envelope_schema": "sources/schemas/common/event_envelope.avsc",
   "payload_schema": "sources/schemas/refund_failed.avsc",
   "producer": "ARC-034",
-  "consumers": ["ARC-024"],
+  "consumers": ["ARC-024", "ARC-031"],
   "delivery": {
     "retries": 3,
     "backoff": { "strategy": "exponential", "intervals_seconds": [1, 2, 4] },
