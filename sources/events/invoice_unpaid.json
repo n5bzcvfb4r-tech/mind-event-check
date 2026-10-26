@@ -8,7 +8,7 @@
   "envelope_schema": "sources/schemas/common/event_envelope.avsc",
   "payload_schema": "sources/schemas/invoice_unpaid.avsc",
   "producer": "ARC-031",
-  "consumers": ["ARC-024"],
+  "consumers": ["ARC-024", "ARC-036"],
   "idempotency_key": ["invoice_id"],
   "delivery": {
     "retries": 3,
