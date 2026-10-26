@@ -56,6 +56,16 @@ channels:
       operationId: EVT-005
     subscribe:
       message: *id005
+  pagos.cobros.recuperado.v1:
+    description: 'PaymentRecovered · productor: ARC-033 → consumidor: ARC-031'
+    x-mind-transport: internal
+    x-mind-audience: internal
+    publish:
+      message: &id014
+        $ref: '#/components/messages/PaymentRecovered'
+      operationId: EVT-014
+    subscribe:
+      message: *id014
   pagos.transferencias.confirmada.v1:
     description: 'TransferenceSucceeded · productor: ARC-024 → consumidor: ARC-024'
     x-mind-transport: internal
@@ -136,6 +146,16 @@ channels:
       operationId: EVT-013
     subscribe:
       message: *id013
+  gymusers.ledger.dead-letter.v1:
+    description: 'LedgerDeadLetter · productor: ARC-035 → consumidor: ARC-020'
+    x-mind-transport: internal
+    x-mind-audience: internal
+    publish:
+      message: &id014
+        $ref: '#/components/messages/LedgerDeadLetter'
+      operationId: EVT-014
+    subscribe:
+      message: *id014
 components:
   messages:
     BankStatementDeposited:
@@ -163,6 +183,14 @@ components:
         type: object
         description: Payload de InvoiceUnpaid
         x-mind-placeholder: true
+    LedgerDeadLetter:
+      name: LedgerDeadLetter
+      summary: event_id del evento original en cuarentena, original_topic de procedencia,
+        raw_payload saneado (sin PAN ni CVV), reject_reason (MISSING_USER_ID/MISSING_AMOUNT/INVALID_STATE_TRANSITION),
+        quarantined_at y alert_target ADMIN
+      payload:
+        type: object
+        description: Payload de LedgerDeadLetter
     PaymentAuthorized:
       name: PaymentAuthorized
       summary: event_id, correlation_id, user_id, transaction_id, invoice_id, gateway_name,
@@ -188,6 +216,14 @@ components:
       payload:
         type: object
         description: Payload de PaymentProcessed
+        x-mind-placeholder: true
+    PaymentRecovered:
+      name: PaymentRecovered
+      summary: invoice_id, payment_transaction_id, amount y recovered_at del ciclo
+        de recobro cerrado en RECOVERED, sin datos de tarjeta
+      payload:
+        type: object
+        description: Payload de PaymentRecovered
         x-mind-placeholder: true
     RefundCompleted:
       name: RefundCompleted

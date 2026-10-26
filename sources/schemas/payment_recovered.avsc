@@ -1,0 +1,48 @@
+{
+  "type": "record",
+  "name": "PaymentRecovered",
+  "namespace": "com.mapfre.gymusers.events.pagos",
+  "doc": "Payload del evento PaymentRecovered (EVT-014) que materializa REQ-118 / AC-EST-07: cuando MOD-003 comunica que un ciclo de recobro se ha cerrado en RECOVERED, la factura UNPAID asociada pasa a PAID con paid_late = true. Los cuatro primeros campos (event_id, event_type, timestamp, correlation_id) son el sobre canónico definido en sources/schemas/common/event_envelope.avsc.",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "UUID que identifica de forma única el evento de dominio emitido (RN REQ-049). Obligatorio."
+    },
+    {
+      "name": "event_type",
+      "type": "string",
+      "doc": "Nombre canónico del tipo de evento en minúsculas y puntos; valor fijo payment.recovered. Obligatorio."
+    },
+    {
+      "name": "timestamp",
+      "type": "string",
+      "doc": "Instante de emisión del evento en ISO-8601 UTC con sufijo Z, p. ej. 2026-10-26T10:35:00.000Z. Obligatorio."
+    },
+    {
+      "name": "correlation_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "UUID de correlación propagado desde el ciclo de recobro a facturación y al ledger. Obligatorio."
+    },
+    {
+      "name": "invoice_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "Factura recuperada, invoices.invoice_id de T.5. Es el campo de emparejamiento (correlation_field) que usa MOD-002 para localizar la factura UNPAID. Obligatorio."
+    },
+    {
+      "name": "payment_transaction_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "Transacción de cobro que recupera la deuda, payment_transactions.transaction_id de T.5. Es la clave de idempotencia — RN REQ-118: un mismo payment_transaction_id se aplica como máximo una vez. Obligatorio."
+    },
+    {
+      "name": "amount",
+      "type": "string",
+      "doc": "Importe decimal en notación de punto fijo con dos decimales, p. ej. \"45.00\". Se transporta como cadena para no perder precisión; PROHIBIDO float en importes. Si no coincide con el importe de la factura se abre la excepción AMOUNT_MISMATCH (AC-EST-06). Obligatorio."
+    },
+    {
+      "name": "recovered_at",
+      "type": "string",
+      "doc": "Instante ISO-8601 UTC con sufijo Z en que el ciclo de recobro se cerró en RECOVERED, dunning_cycles.closed_at de T.5. Obligatorio."
+    }
+  ]
+}

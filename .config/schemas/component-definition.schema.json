@@ -161,6 +161,18 @@
             "description": "Número máximo de eventos de este tipo que el componente publica por factura. RN REQ-119: por cada factura se publica como máximo un evento InvoiceUnpaid.",
             "minimum": 1
           },
+          "field_mapping": {
+            "type": "object",
+            "description": "Correspondencia entre el nombre CANÓNICO del campo en el consumidor (clave; nombre físico de T.5, p. ej. payment_transaction_id) y el nombre FÍSICO del campo en el payload Avro de ESE evento concreto (valor, p. ej. transaction_id). Sin ella, idempotency_key y correlation_field no serían resolubles sobre payloads cuyos esquemas usan otros nombres.",
+            "minProperties": 1,
+            "propertyNames": {
+              "pattern": "^[a-z][a-z0-9_]*$"
+            },
+            "additionalProperties": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$"
+            }
+          },
           "component": {
             "type": "string",
             "description": "Componente concreto (ARC-xxx) que ejecuta esta operación sobre el canal, cuando el fichero describe el mapa pub/sub completo de un canal y reúne productor y consumidor en un mismo documento. Ejemplo: ARC-031 publica SubscriptionCancelled y ARC-033 lo consume.",
@@ -265,6 +277,21 @@
         }
       }
     },
+    "idempotency_key": {
+      "type": "array",
+      "description": "Campos canónicos del resultado de cobro que forman la clave de idempotencia con la que el componente consumidor aplica el evento. RN REQ-118: un mismo payment_transaction_id se aplica como máximo una vez.",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]*$"
+      }
+    },
+    "correlation_field": {
+      "type": "string",
+      "description": "Campo canónico por el que el consumidor empareja el resultado de cobro con la entidad local. RN REQ-118: los resultados de cobro de MOD-003 se emparejan por invoice_id.",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
     "payload_constraints": {
       "type": "object",
       "description": "Restricciones opcionales sobre los payloads manejados por el componente.",
@@ -278,6 +305,48 @@
             "type": "string",
             "pattern": "^([Pp][Aa][Nn]|[Cc][Aa][Rr][Dd]_?[Nn][Uu][Mm][Bb][Ee][Rr]|[Ff][Uu][Ll][Ll]_[Pp][Aa][Nn]|[Cc][Aa][Rr][Dd]_[Pp][Aa][Nn]|[Cc][Vv][VvCc]2?|[Cc][Vv][Cc]|[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy]_[Cc][Oo][Dd][Ee]|[Tt][Oo][Kk][Ee][Nn]|[Cc][Aa][Rr][Dd]_[Tt][Oo][Kk][Ee][Nn]|[Aa][Cc][Cc][Ee][Ss][Ss]_[Tt][Oo][Kk][Ee][Nn]|[Rr][Ee][Ff][Rr][Ee][Ss][Hh]_[Tt][Oo][Kk][Ee][Nn]|[Aa][Uu][Tt][Hh]_[Tt][Oo][Kk][Ee][Nn]|[Aa][Pp][Ii]_?[Kk][Ee][Yy]|[Ii][Bb][Aa][Nn]|[Ff][Uu][Ll][Ll]_[Ii][Bb][Aa][Nn]|[Bb][Aa][Nn][Kk]_[Aa][Cc][Cc][Oo][Uu][Nn][Tt]_[Nn][Uu][Mm][Bb][Ee][Rr]|[Aa][Cc][Cc][Oo][Uu][Nn][Tt]_[Nn][Uu][Mm][Bb][Ee][Rr])$"
           }
+        }
+      }
+    },
+    "idempotency": {
+      "type": "object",
+      "description": "Clave de idempotencia de escritura que aplica un componente consumidor al proyectar los eventos que consume. RN REQ-069: la combinación (payment_method, provider_transaction_id, transaction_type) es única en transaction_ledger; una reentrega actualiza el asiento, no lo duplica (AC-TRX-01).",
+      "additionalProperties": false,
+      "required": [
+        "table",
+        "key_fields",
+        "on_conflict"
+      ],
+      "properties": {
+        "table": {
+          "type": "string",
+          "description": "Nombre físico de la tabla destino de la escritura idempotente (T.5, p. ej. transaction_ledger).",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "key_fields": {
+          "type": "array",
+          "description": "Campos físicos que componen la clave única; deben coincidir con el UNIQUE declarado en T.5.",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          }
+        },
+        "constraint": {
+          "type": "string",
+          "description": "Tipo de restricción que respalda la clave en la base de datos.",
+          "enum": [
+            "unique"
+          ]
+        },
+        "on_conflict": {
+          "type": "string",
+          "description": "Comportamiento ante una reentrega del mismo hecho de negocio: update (actualiza el asiento existente) o ignore.",
+          "enum": [
+            "update",
+            "ignore"
+          ]
         }
       }
     },
