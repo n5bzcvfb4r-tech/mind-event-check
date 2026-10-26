@@ -170,6 +170,48 @@
         }
       }
     },
+    "idempotency": {
+      "type": "object",
+      "description": "Clave de idempotencia de escritura que aplica un componente consumidor al proyectar los eventos que consume. RN REQ-069: la combinación (payment_method, provider_transaction_id, transaction_type) es única en transaction_ledger; una reentrega actualiza el asiento, no lo duplica (AC-TRX-01).",
+      "additionalProperties": false,
+      "required": [
+        "table",
+        "key_fields",
+        "on_conflict"
+      ],
+      "properties": {
+        "table": {
+          "type": "string",
+          "description": "Nombre físico de la tabla destino de la escritura idempotente (T.5, p. ej. transaction_ledger).",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "key_fields": {
+          "type": "array",
+          "description": "Campos físicos que componen la clave única; deben coincidir con el UNIQUE declarado en T.5.",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          }
+        },
+        "constraint": {
+          "type": "string",
+          "description": "Tipo de restricción que respalda la clave en la base de datos.",
+          "enum": [
+            "unique"
+          ]
+        },
+        "on_conflict": {
+          "type": "string",
+          "description": "Comportamiento ante una reentrega del mismo hecho de negocio: update (actualiza el asiento existente) o ignore.",
+          "enum": [
+            "update",
+            "ignore"
+          ]
+        }
+      }
+    },
     "delivery": {
       "type": "object",
       "description": "Política de entrega que el componente productor aplica a TODOS los canales que declara: reintentos, backoff y timeout (REQ-049).",

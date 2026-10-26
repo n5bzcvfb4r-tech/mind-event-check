@@ -1,0 +1,62 @@
+{
+  "type": "record",
+  "name": "LedgerDeadLetter",
+  "namespace": "com.mapfre.gymusers.events.ledger",
+  "doc": "Payload del evento LedgerDeadLetter (REQ-069, AC-TRX-03): canal de cuarentena del consumidor del ledger MOD-005. Un evento económico sin user_id, sin importe o con una transición de estado no permitida no llega a transaction_ledger: queda aquí con alerta a ADMIN y no se pierde. Los cuatro primeros campos (event_id, event_type, timestamp, correlation_id) son el sobre canónico definido en sources/schemas/common/event_envelope.avsc.",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "UUID del evento original puesto en cuarentena; clave de idempotencia (un evento = un asiento de cuarentena). Obligatorio."
+    },
+    {
+      "name": "event_type",
+      "type": "string",
+      "doc": "Nombre canónico del tipo de evento en minúsculas y puntos: ledger.deadletter. Obligatorio."
+    },
+    {
+      "name": "timestamp",
+      "type": "string",
+      "doc": "Instante de emisión del evento en ISO-8601 UTC con sufijo Z, p. ej. 2026-10-26T10:35:30.000Z. Obligatorio."
+    },
+    {
+      "name": "correlation_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "UUID de correlación heredado del evento original puesto en cuarentena. Obligatorio."
+    },
+    {
+      "name": "original_topic",
+      "type": "string",
+      "doc": "Canal del que procede el evento rechazado, p. ej. pagos.cobros.autorizado.v1. Obligatorio."
+    },
+    {
+      "name": "raw_payload",
+      "type": "string",
+      "doc": "Payload original SANEADO serializado en JSON; nunca PAN, CVV ni tokens (RN-03 de REQ-069): sin secuencias de 13 a 19 dígitos. Obligatorio."
+    },
+    {
+      "name": "reject_reason",
+      "type": {
+        "type": "enum",
+        "name": "LedgerDeadLetterRejectReason",
+        "symbols": ["MISSING_USER_ID", "MISSING_AMOUNT", "INVALID_STATE_TRANSITION"]
+      },
+      "doc": "Motivo del rechazo (REQ-069): evento sin user_id, evento sin importe, o transición de estado no permitida."
+    },
+    {
+      "name": "quarantined_at",
+      "type": "string",
+      "doc": "Instante de puesta en cuarentena en ISO-8601 UTC con sufijo Z, p. ej. 2026-10-26T10:35:30.000Z. Obligatorio."
+    },
+    {
+      "name": "alert_target",
+      "type": {
+        "type": "enum",
+        "name": "LedgerDeadLetterAlertTarget",
+        "symbols": ["ADMIN"]
+      },
+      "default": "ADMIN",
+      "doc": "Destinatario de la alerta; siempre ADMIN (REQ-069: cuarentena con alerta a ADMIN)."
+    }
+  ]
+}
