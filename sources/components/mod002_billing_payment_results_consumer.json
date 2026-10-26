@@ -1,0 +1,43 @@
+{
+  "component": "ARC-031",
+  "name": "mod002-facturacion-resultados-cobro",
+  "description": "MOD-002 (facturación): consumidor de los resultados de cobro que publica MOD-003 — PaymentProcessed, PaymentAuthorized, PaymentFailed y PaymentRecovered. Aplica cada resultado sobre la factura emparejada por invoice_id y es idempotente por payment_transaction_id (RN REQ-118: un mismo payment_transaction_id se aplica como máximo una vez). Un PaymentRecovered sobre una factura UNPAID la deja en PAID con paid_late (AC-EST-07).",
+  "channel": "pagos.cobros.procesado.v1",
+  "role": "consumer",
+  "idempotency_key": ["payment_transaction_id"],
+  "correlation_field": "invoice_id",
+  "events": [
+    {
+      "event_code": "EVT-005",
+      "name": "PaymentProcessed",
+      "topic": "pagos.cobros.procesado.v1",
+      "operation": "subscribe",
+      "field_mapping": { "payment_transaction_id": "payment_id", "amount": "amount" }
+    },
+    {
+      "event_code": "EVT-003",
+      "name": "PaymentAuthorized",
+      "topic": "pagos.cobros.autorizado.v1",
+      "operation": "subscribe",
+      "field_mapping": { "payment_transaction_id": "transaction_id", "invoice_id": "invoice_id", "amount": "amount_cents" }
+    },
+    {
+      "event_code": "EVT-004",
+      "name": "PaymentFailed",
+      "topic": "pagos.cobros.fallido.v1",
+      "operation": "subscribe",
+      "field_mapping": { "payment_transaction_id": "transaction_id", "failure_code": "failure_code" }
+    },
+    {
+      "event_code": "EVT-014",
+      "name": "PaymentRecovered",
+      "topic": "pagos.cobros.recuperado.v1",
+      "operation": "subscribe",
+      "field_mapping": { "payment_transaction_id": "payment_transaction_id", "invoice_id": "invoice_id", "amount": "amount" }
+    }
+  ],
+  "owner": { "team": "ARC-023", "contact": "arquitectura.eventos@mapfre.com" },
+  "payload_constraints": {
+    "forbidden_field_names": ["pan", "card_number", "cvv", "cvc", "token", "card_token", "access_token", "iban", "bank_account_number"]
+  }
+}

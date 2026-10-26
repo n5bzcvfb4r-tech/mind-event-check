@@ -87,13 +87,10 @@
           },
           "outbox": {
             "type": "object",
-            "description": "Persistencia transaccional del evento en la tabla de outbox y política de reentrega del relay cuando el consumidor no está disponible (REQ-038).",
+            "description": "Persistencia transaccional del evento en la tabla de outbox (T.5: event_outbox). Admite dos perfiles: política de reentrega del relay (REQ-038: max_attempts, attempt_interval_seconds, escalation_target) y política ante fallo de publicación (AC-BAJ-06: retry_from_outbox, rollback_on_publish_failure).",
             "additionalProperties": false,
             "required": [
-              "table",
-              "max_attempts",
-              "attempt_interval_seconds",
-              "escalation_target"
+              "table"
             ],
             "properties": {
               "table": {
@@ -122,37 +119,6 @@
               "persist_until_delivered": {
                 "type": "boolean",
                 "description": "El evento permanece en event_outbox hasta que se confirma la entrega."
-              }
-            }
-          },
-          "max_events_per_invoice": {
-            "type": "integer",
-            "description": "Número máximo de eventos de este tipo que el componente publica por factura. RN REQ-119: por cada factura se publica como máximo un evento InvoiceUnpaid.",
-            "minimum": 1
-          },
-          "component": {
-            "type": "string",
-            "description": "Componente concreto (ARC-xxx) que ejecuta esta operación sobre el canal, cuando el fichero describe el mapa pub/sub completo de un canal y reúne productor y consumidor en un mismo documento. Ejemplo: ARC-031 publica SubscriptionCancelled y ARC-033 lo consume.",
-            "pattern": "^ARC-[0-9]{3}$"
-          },
-          "publish_after_commit": {
-            "type": "boolean",
-            "description": "Si es true, el evento solo se publica TRAS el commit de la transacción que lo origina (patrón outbox transaccional). AC-BAJ-06: SubscriptionCancelled se publica después de confirmar la baja, nunca dentro de la transacción."
-          },
-          "outbox": {
-            "type": "object",
-            "description": "Publicación mediante outbox transaccional: tabla de la que se lee el evento y política ante un fallo de publicación.",
-            "additionalProperties": false,
-            "required": [
-              "table",
-              "retry_from_outbox",
-              "rollback_on_publish_failure"
-            ],
-            "properties": {
-              "table": {
-                "type": "string",
-                "description": "Tabla de outbox transaccional desde la que se publica el evento. T.5: event_outbox.",
-                "pattern": "^[a-z][a-z0-9_]*$"
               },
               "retry_from_outbox": {
                 "type": "boolean",
@@ -162,7 +128,48 @@
                 "type": "boolean",
                 "description": "AC-BAJ-06: con false, un fallo de publicación NO revierte la operación de negocio ya confirmada (la baja permanece registrada y solo se reintenta el envío)."
               }
+            },
+            "anyOf": [
+              {
+                "required": [
+                  "max_attempts",
+                  "attempt_interval_seconds",
+                  "escalation_target"
+                ]
+              },
+              {
+                "required": [
+                  "retry_from_outbox",
+                  "rollback_on_publish_failure"
+                ]
+              }
+            ]
+          },
+          "max_events_per_invoice": {
+            "type": "integer",
+            "description": "Número máximo de eventos de este tipo que el componente publica por factura. RN REQ-119: por cada factura se publica como máximo un evento InvoiceUnpaid.",
+            "minimum": 1
+          },
+          "field_mapping": {
+            "type": "object",
+            "description": "Correspondencia entre el nombre CANÓNICO del campo en el consumidor (clave; nombre físico de T.5, p. ej. payment_transaction_id) y el nombre FÍSICO del campo en el payload Avro de ESE evento concreto (valor, p. ej. transaction_id). Sin ella, idempotency_key y correlation_field no serían resolubles sobre payloads cuyos esquemas usan otros nombres.",
+            "minProperties": 1,
+            "propertyNames": {
+              "pattern": "^[a-z][a-z0-9_]*$"
+            },
+            "additionalProperties": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$"
             }
+          },
+          "component": {
+            "type": "string",
+            "description": "Componente concreto (ARC-xxx) que ejecuta esta operación sobre el canal, cuando el fichero describe el mapa pub/sub completo de un canal y reúne productor y consumidor en un mismo documento. Ejemplo: ARC-031 publica SubscriptionCancelled y ARC-033 lo consume.",
+            "pattern": "^ARC-[0-9]{3}$"
+          },
+          "publish_after_commit": {
+            "type": "boolean",
+            "description": "Si es true, el evento solo se publica TRAS el commit de la transacción que lo origina (patrón outbox transaccional). AC-BAJ-06: SubscriptionCancelled se publica después de confirmar la baja, nunca dentro de la transacción."
           },
           "close_reason": {
             "type": "string",
@@ -228,6 +235,21 @@
           "format": "email"
         }
       }
+    },
+    "idempotency_key": {
+      "type": "array",
+      "description": "Campos canónicos del resultado de cobro que forman la clave de idempotencia con la que el componente consumidor aplica el evento. RN REQ-118: un mismo payment_transaction_id se aplica como máximo una vez.",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]*$"
+      }
+    },
+    "correlation_field": {
+      "type": "string",
+      "description": "Campo canónico por el que el consumidor empareja el resultado de cobro con la entidad local. RN REQ-118: los resultados de cobro de MOD-003 se emparejan por invoice_id.",
+      "pattern": "^[a-z][a-z0-9_]*$"
     },
     "payload_constraints": {
       "type": "object",
