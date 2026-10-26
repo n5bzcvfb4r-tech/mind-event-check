@@ -1,0 +1,43 @@
+{
+  "component": "ARC-030",
+  "name": "gymusers-profile-updated-pubsub",
+  "description": "Mapa pub/sub del canal gymusers.profile.updated.v1. ARC-030 (Identidad y sesiones) es el ÚNICO productor: publica ProfileUpdated desde el outbox transaccional event_outbox tras el commit de la actualización del perfil (REQ-008 / AC-PROF-02). Lo consumen ARC-036 (Avisos de impago / notificaciones) y ARC-031 (Suscripciones y facturación), que aplican el cambio de forma idempotente por (user_id, updated_at). El nick no viaja en el payload: es inmutable (AC-PROF-03).",
+  "channel": "gymusers.profile.updated.v1",
+  "role": "producer-consumer",
+  "events": [
+    {
+      "event_code": "EVT-015",
+      "name": "ProfileUpdated",
+      "topic": "gymusers.profile.updated.v1",
+      "operation": "publish",
+      "component": "ARC-030",
+      "publish_after_commit": true,
+      "outbox": {
+        "table": "event_outbox",
+        "retry_from_outbox": true,
+        "rollback_on_publish_failure": false
+      }
+    },
+    {
+      "event_code": "EVT-015",
+      "name": "ProfileUpdated",
+      "topic": "gymusers.profile.updated.v1",
+      "operation": "subscribe",
+      "component": "ARC-036",
+      "idempotency_key": ["user_id", "updated_at"]
+    },
+    {
+      "event_code": "EVT-015",
+      "name": "ProfileUpdated",
+      "topic": "gymusers.profile.updated.v1",
+      "operation": "subscribe",
+      "component": "ARC-031",
+      "idempotency_key": ["user_id", "updated_at"]
+    }
+  ],
+  "owner": { "team": "ARC-023", "contact": "arquitectura.eventos@mapfre.com" },
+  "idempotency_key": ["user_id", "updated_at"],
+  "payload_constraints": {
+    "forbidden_field_names": ["pan", "card_number", "cvv", "cvc", "token", "card_token", "access_token", "iban", "bank_account_number"]
+  }
+}

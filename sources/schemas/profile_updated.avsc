@@ -1,0 +1,69 @@
+{
+  "type": "record",
+  "name": "ProfileUpdated",
+  "namespace": "com.mapfre.gymusers.events.identidad",
+  "doc": "Payload del evento ProfileUpdated (EVT-015) que materializa REQ-008 / AC-PROF-02. Los cuatro primeros campos (event_id, event_type, timestamp, correlation_id) son el sobre canónico definido en sources/schemas/common/event_envelope.avsc; los campos de negocio usan los nombres físicos de la tabla users de T.5. El esquema NO incluye nick (AC-PROF-03: campo inmutable, no editable, que no viaja nunca como cambio) ni password_hash (credencial, nunca sale del módulo de identidad).",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "UUID que identifica de forma única el evento de dominio emitido (RN REQ-049). Obligatorio."
+    },
+    {
+      "name": "event_type",
+      "type": "string",
+      "doc": "Tipo canónico del evento. Valor fijo: profile.updated. Obligatorio."
+    },
+    {
+      "name": "timestamp",
+      "type": "string",
+      "doc": "Instante de emisión del evento en ISO-8601 UTC con sufijo Z, p. ej. 2026-10-26T10:35:00.000Z. Obligatorio."
+    },
+    {
+      "name": "correlation_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "UUID de correlación propagado a los consumidores de la actualización de perfil. Obligatorio."
+    },
+    {
+      "name": "user_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "Socio cuyo perfil se ha actualizado (users.user_id). Obligatorio."
+    },
+    {
+      "name": "first_name",
+      "type": "string",
+      "doc": "Nombre del socio tras la actualización (users.first_name). Máximo 100 caracteres (REQ-008). Obligatorio."
+    },
+    {
+      "name": "last_name",
+      "type": "string",
+      "doc": "Apellidos del socio tras la actualización (users.last_name). Máximo 100 caracteres (REQ-008). Obligatorio."
+    },
+    {
+      "name": "age",
+      "type": "int",
+      "doc": "Edad del socio tras la actualización (users.age). CHECK 18-120 inclusive (REQ-008 / validación 5). Obligatorio."
+    },
+    {
+      "name": "address",
+      "type": "string",
+      "doc": "Dirección postal del socio tras la actualización (users.address). Máximo 255 caracteres. Obligatorio."
+    },
+    {
+      "name": "email",
+      "type": "string",
+      "doc": "Correo electrónico del socio tras la actualización (users.email). Formato RFC 5322 básico, normalizado en minúsculas, máximo 254 caracteres. Obligatorio."
+    },
+    {
+      "name": "phone",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Opcional. Teléfono del socio, máximo 20 caracteres (REQ-008 lo declara opcional). El nombre físico de la columna en T.5 es users.phone_number; el DoD de esta tarea fija phone como nombre del campo del evento."
+    },
+    {
+      "name": "updated_at",
+      "type": "string",
+      "doc": "Fecha y hora de la actualización del perfil (users.updated_at) en ISO-8601 UTC con sufijo Z. Junto con user_id forma la clave de idempotencia del evento. Obligatorio."
+    }
+  ]
+}

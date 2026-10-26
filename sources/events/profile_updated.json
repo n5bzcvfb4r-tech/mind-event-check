@@ -1,0 +1,74 @@
+{
+  "name": "ProfileUpdated",
+  "event_code": "EVT-015",
+  "event_type": "profile.updated",
+  "topic": "gymusers.profile.updated.v1",
+  "version": 1,
+  "description": "Se publica cuando el socio actualiza sus datos personales editables (REQ-008 / AC-PROF-02). Lo produce ARC-030 (Identidad y sesiones) desde el outbox transaccional event_outbox tras el commit de la actualización, y lo consumen ARC-036 (Avisos de impago / notificaciones) y ARC-031 (Suscripciones y facturación). El nick NO viaja: es inmutable (AC-PROF-03). Si falla la publicación se reintenta desde event_outbox y la actualización NO se revierte.",
+  "envelope_schema": "sources/schemas/common/event_envelope.avsc",
+  "payload_schema": "sources/schemas/profile_updated.avsc",
+  "producer": "ARC-030",
+  "consumers": ["ARC-036", "ARC-031"],
+  "publish_after_commit": true,
+  "idempotency_key": ["user_id", "updated_at"],
+  "delivery": {
+    "retries": 3,
+    "backoff": { "strategy": "exponential", "intervals_seconds": [1, 2, 4] },
+    "timeout_s": 5
+  },
+  "malformed_policy": {
+    "retryable": false,
+    "action": "DEAD_LETTER"
+  },
+  "outbox": {
+    "table": "event_outbox",
+    "max_attempts": 10,
+    "attempt_interval_seconds": 30,
+    "escalation_target": "ADMIN",
+    "persist_until_delivered": true
+  },
+  "payload": {
+    "required_fields": [
+      "event_id",
+      "event_type",
+      "timestamp",
+      "correlation_id",
+      "user_id",
+      "first_name",
+      "last_name",
+      "age",
+      "address",
+      "email",
+      "updated_at"
+    ],
+    "optional_fields": ["phone"],
+    "field_constraints": [
+      { "field": "event_type", "type": "string", "enum": ["profile.updated"] },
+      { "field": "age", "type": "integer", "minimum": 18, "maximum": 120 },
+      { "field": "first_name", "type": "string", "pattern": "^.{1,100}$" },
+      { "field": "last_name", "type": "string", "pattern": "^.{1,100}$" },
+      { "field": "address", "type": "string", "pattern": "^.{1,255}$" },
+      { "field": "email", "type": "string", "pattern": "^[^@\\s]+@[^@\\s.]+(\\.[^@\\s.]+)+$" },
+      { "field": "phone", "type": "string", "pattern": "^.{1,20}$" },
+      {
+        "field": "updated_at",
+        "type": "string",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$"
+      }
+    ],
+    "example": {
+      "event_id": "3f1c8a52-9b47-4d6e-8c20-5a7e1b9d4f63",
+      "event_type": "profile.updated",
+      "timestamp": "2026-10-26T10:35:00.000Z",
+      "correlation_id": "7d2e4b18-6c35-4f9a-b1d7-2e8c5a3f9b04",
+      "user_id": "a5e9c741-3b62-4e08-9d15-6f4b8c2a7e31",
+      "first_name": "Lucia",
+      "last_name": "Fernandez Ortiz",
+      "age": 34,
+      "address": "Calle Mayor 14, 3B, 28013 Madrid",
+      "email": "lucia.fernandez@example.com",
+      "phone": "+34600111222",
+      "updated_at": "2026-10-26T10:35:00.000Z"
+    }
+  }
+}
