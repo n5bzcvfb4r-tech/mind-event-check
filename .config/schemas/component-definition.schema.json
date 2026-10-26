@@ -87,23 +87,37 @@
           },
           "outbox": {
             "type": "object",
-            "description": "Persistencia transaccional del evento en la tabla de outbox y política de reentrega del relay cuando el consumidor no está disponible (REQ-038).",
+            "description": "Publicacion del evento mediante el outbox transaccional (T.5: event_outbox). Reune los dos aspectos que declaran los componentes: la politica de reentrega del relay (REQ-038) y la politica ante un fallo de publicacion (AC-BAJ-06). Cada componente declara el aspecto que le aplica; anyOf exige que declare al menos uno completo, de modo que ningun outbox quede a medio especificar.",
             "additionalProperties": false,
             "required": [
-              "table",
-              "max_attempts",
-              "attempt_interval_seconds",
-              "escalation_target"
+              "table"
+            ],
+            "anyOf": [
+              {
+                "description": "Politica de reentrega del relay (REQ-038).",
+                "required": [
+                  "max_attempts",
+                  "attempt_interval_seconds",
+                  "escalation_target"
+                ]
+              },
+              {
+                "description": "Politica ante un fallo de publicacion (AC-BAJ-06).",
+                "required": [
+                  "retry_from_outbox",
+                  "rollback_on_publish_failure"
+                ]
+              }
             ],
             "properties": {
               "table": {
                 "type": "string",
-                "description": "Nombre físico de la tabla de outbox (T.5: event_outbox).",
+                "description": "Nombre fisico de la tabla de outbox (T.5: event_outbox).",
                 "pattern": "^[a-z][a-z0-9_]*$"
               },
               "max_attempts": {
                 "type": "integer",
-                "description": "Intentos de entrega del relay antes de escalar (RN REQ-038: como máximo 10).",
+                "description": "Intentos de entrega del relay antes de escalar (RN REQ-038: como maximo 10).",
                 "minimum": 1,
                 "maximum": 10
               },
@@ -122,6 +136,14 @@
               "persist_until_delivered": {
                 "type": "boolean",
                 "description": "El evento permanece en event_outbox hasta que se confirma la entrega."
+              },
+              "retry_from_outbox": {
+                "type": "boolean",
+                "description": "Si es true, cuando la publicacion falla el evento se reintenta desde el outbox hasta entregarse."
+              },
+              "rollback_on_publish_failure": {
+                "type": "boolean",
+                "description": "AC-BAJ-06: con false, un fallo de publicacion NO revierte la operacion de negocio ya confirmada (la baja permanece registrada y solo se reintenta el envio)."
               }
             }
           },
@@ -138,31 +160,6 @@
           "publish_after_commit": {
             "type": "boolean",
             "description": "Si es true, el evento solo se publica TRAS el commit de la transacción que lo origina (patrón outbox transaccional). AC-BAJ-06: SubscriptionCancelled se publica después de confirmar la baja, nunca dentro de la transacción."
-          },
-          "outbox": {
-            "type": "object",
-            "description": "Publicación mediante outbox transaccional: tabla de la que se lee el evento y política ante un fallo de publicación.",
-            "additionalProperties": false,
-            "required": [
-              "table",
-              "retry_from_outbox",
-              "rollback_on_publish_failure"
-            ],
-            "properties": {
-              "table": {
-                "type": "string",
-                "description": "Tabla de outbox transaccional desde la que se publica el evento. T.5: event_outbox.",
-                "pattern": "^[a-z][a-z0-9_]*$"
-              },
-              "retry_from_outbox": {
-                "type": "boolean",
-                "description": "Si es true, cuando la publicación falla el evento se reintenta desde el outbox hasta entregarse."
-              },
-              "rollback_on_publish_failure": {
-                "type": "boolean",
-                "description": "AC-BAJ-06: con false, un fallo de publicación NO revierte la operación de negocio ya confirmada (la baja permanece registrada y solo se reintenta el envío)."
-              }
-            }
           },
           "close_reason": {
             "type": "string",
