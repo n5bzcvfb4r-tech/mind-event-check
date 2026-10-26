@@ -55,8 +55,7 @@
         "name": "LedgerDeadLetterAlertTarget",
         "symbols": ["ADMIN"]
       },
-      "default": "ADMIN",
-      "doc": "Destinatario de la alerta; siempre ADMIN (REQ-069: cuarentena con alerta a ADMIN)."
+      "doc": "Destinatario de la alerta; siempre ADMIN y OBLIGATORIO: sin valor por defecto, un asiento de cuarentena sin alert_target no valida (REQ-069: cuarentena con alerta a ADMIN)."
     }
   ]
 }
