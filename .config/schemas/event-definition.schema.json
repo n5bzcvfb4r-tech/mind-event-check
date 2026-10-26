@@ -1,0 +1,192 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mapfre.com/mind/schemas/event-definition.schema.json",
+  "title": "Event Definition",
+  "description": "Definición canónica de un evento de negocio publicado en el bus corporativo (sources/events/*.json). Cada definición enlaza el canal del asyncapi.yaml con el sobre canónico y el esquema Avro del payload, declara productor y consumidores (ARC-xxx) y su política de entrega. Los nombres de campo del payload están sujetos a las restricciones PCI/GDPR: no se admiten PAN, CVV, tokens ni IBAN completo.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "event_code",
+    "event_type",
+    "topic",
+    "version",
+    "envelope_schema",
+    "payload_schema",
+    "producer",
+    "consumers",
+    "delivery",
+    "payload"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nombre del evento en PascalCase, p. ej. PaymentAuthorized.",
+      "pattern": "^[A-Z][A-Za-z0-9]+$"
+    },
+    "event_code": {
+      "type": "string",
+      "description": "Código corporativo del evento, p. ej. EVT-001.",
+      "pattern": "^EVT-[0-9]{3}$"
+    },
+    "event_type": {
+      "type": "string",
+      "description": "Tipo de evento en notación de puntos en minúsculas, p. ej. payment.authorized.",
+      "pattern": "^[a-z][a-z0-9]*(\\.[a-z][a-z0-9]*)+$"
+    },
+    "topic": {
+      "type": "string",
+      "description": "Canal declarado en asyncapi.yaml, versionado al final, p. ej. pagos.cobros.autorizado.v1.",
+      "pattern": "^[a-z0-9]+(\\.[a-z0-9-]+)+\\.v[0-9]+$",
+      "minLength": 3
+    },
+    "version": {
+      "type": "integer",
+      "description": "Versión mayor del contrato del evento (coherente con el sufijo .vN del topic).",
+      "minimum": 1
+    },
+    "envelope_schema": {
+      "type": "string",
+      "description": "Ruta relativa al esquema Avro del sobre canónico corporativo.",
+      "pattern": "^sources/schemas/.+\\.avsc$"
+    },
+    "payload_schema": {
+      "type": "string",
+      "description": "Ruta relativa al esquema Avro (.avsc) del payload del evento.",
+      "pattern": "^sources/schemas/.+\\.avsc$"
+    },
+    "producer": {
+      "type": "string",
+      "description": "Componente productor del evento (código ARC-xxx).",
+      "pattern": "^ARC-[0-9]{3}$"
+    },
+    "consumers": {
+      "type": "array",
+      "description": "Componentes consumidores del evento (códigos ARC-xxx); al menos uno y sin duplicados.",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^ARC-[0-9]{3}$"
+      }
+    },
+    "description": {
+      "type": "string",
+      "description": "Descripción funcional opcional del evento."
+    },
+    "delivery": {
+      "type": "object",
+      "description": "Política de entrega del evento: reintentos, backoff y timeout.",
+      "additionalProperties": false,
+      "required": [
+        "retries",
+        "backoff",
+        "timeout_s"
+      ],
+      "properties": {
+        "retries": {
+          "type": "integer",
+          "description": "Número de reintentos antes de enviar a la cola de descarte.",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "backoff": {
+          "type": "object",
+          "description": "Estrategia de espera entre reintentos.",
+          "additionalProperties": false,
+          "required": [
+            "strategy",
+            "intervals_seconds"
+          ],
+          "properties": {
+            "strategy": {
+              "type": "string",
+              "description": "Estrategia de backoff aplicada entre reintentos.",
+              "enum": [
+                "exponential",
+                "linear",
+                "fixed"
+              ]
+            },
+            "intervals_seconds": {
+              "type": "array",
+              "description": "Intervalos de espera en segundos; todos estrictamente positivos.",
+              "minItems": 1,
+              "items": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              }
+            }
+          }
+        },
+        "timeout_s": {
+          "type": "number",
+          "description": "Timeout de entrega en segundos (mayor que 0 y como máximo 60).",
+          "exclusiveMinimum": 0,
+          "maximum": 60
+        }
+      }
+    },
+    "payload": {
+      "type": "object",
+      "description": "Contrato de campos del payload del evento.",
+      "additionalProperties": false,
+      "required": [
+        "required_fields"
+      ],
+      "properties": {
+        "required_fields": {
+          "type": "array",
+          "description": "Campos obligatorios del payload en snake_case. Debe incluir los cuatro campos del sobre canónico (event_id, event_type, timestamp, correlation_id) y no puede contener nombres prohibidos por PCI/GDPR (PAN, CVV, token, IBAN completo).",
+          "minItems": 4,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "not": {
+              "pattern": "^([Pp][Aa][Nn]|[Cc][Aa][Rr][Dd]_?[Nn][Uu][Mm][Bb][Ee][Rr]|[Ff][Uu][Ll][Ll]_[Pp][Aa][Nn]|[Cc][Aa][Rr][Dd]_[Pp][Aa][Nn]|[Cc][Vv][VvCc]2?|[Cc][Vv][Cc]|[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy]_[Cc][Oo][Dd][Ee]|[Tt][Oo][Kk][Ee][Nn]|[Cc][Aa][Rr][Dd]_[Tt][Oo][Kk][Ee][Nn]|[Aa][Cc][Cc][Ee][Ss][Ss]_[Tt][Oo][Kk][Ee][Nn]|[Rr][Ee][Ff][Rr][Ee][Ss][Hh]_[Tt][Oo][Kk][Ee][Nn]|[Aa][Uu][Tt][Hh]_[Tt][Oo][Kk][Ee][Nn]|[Aa][Pp][Ii]_?[Kk][Ee][Yy]|[Ii][Bb][Aa][Nn]|[Ff][Uu][Ll][Ll]_[Ii][Bb][Aa][Nn]|[Bb][Aa][Nn][Kk]_[Aa][Cc][Cc][Oo][Uu][Nn][Tt]_[Nn][Uu][Mm][Bb][Ee][Rr]|[Aa][Cc][Cc][Oo][Uu][Nn][Tt]_[Nn][Uu][Mm][Bb][Ee][Rr])$"
+            }
+          },
+          "allOf": [
+            {
+              "description": "RN REQ-049: required_fields debe contener el campo del sobre canónico 'event_id'.",
+              "contains": {
+                "const": "event_id"
+              }
+            },
+            {
+              "description": "RN REQ-049: required_fields debe contener el campo del sobre canónico 'event_type'.",
+              "contains": {
+                "const": "event_type"
+              }
+            },
+            {
+              "description": "RN REQ-049: required_fields debe contener el campo del sobre canónico 'timestamp'.",
+              "contains": {
+                "const": "timestamp"
+              }
+            },
+            {
+              "description": "RN REQ-049: required_fields debe contener el campo del sobre canónico 'correlation_id'.",
+              "contains": {
+                "const": "correlation_id"
+              }
+            }
+          ]
+        },
+        "optional_fields": {
+          "type": "array",
+          "description": "Campos opcionales del payload en snake_case; tampoco pueden usar nombres prohibidos por PCI/GDPR (PAN, CVV, token, IBAN completo).",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "not": {
+              "pattern": "^([Pp][Aa][Nn]|[Cc][Aa][Rr][Dd]_?[Nn][Uu][Mm][Bb][Ee][Rr]|[Ff][Uu][Ll][Ll]_[Pp][Aa][Nn]|[Cc][Aa][Rr][Dd]_[Pp][Aa][Nn]|[Cc][Vv][VvCc]2?|[Cc][Vv][Cc]|[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy]_[Cc][Oo][Dd][Ee]|[Tt][Oo][Kk][Ee][Nn]|[Cc][Aa][Rr][Dd]_[Tt][Oo][Kk][Ee][Nn]|[Aa][Cc][Cc][Ee][Ss][Ss]_[Tt][Oo][Kk][Ee][Nn]|[Rr][Ee][Ff][Rr][Ee][Ss][Hh]_[Tt][Oo][Kk][Ee][Nn]|[Aa][Uu][Tt][Hh]_[Tt][Oo][Kk][Ee][Nn]|[Aa][Pp][Ii]_?[Kk][Ee][Yy]|[Ii][Bb][Aa][Nn]|[Ff][Uu][Ll][Ll]_[Ii][Bb][Aa][Nn]|[Bb][Aa][Nn][Kk]_[Aa][Cc][Cc][Oo][Uu][Nn][Tt]_[Nn][Uu][Mm][Bb][Ee][Rr]|[Aa][Cc][Cc][Oo][Uu][Nn][Tt]_[Nn][Uu][Mm][Bb][Ee][Rr])$"
+            }
+          }
+        }
+      }
+    }
+  }
+}

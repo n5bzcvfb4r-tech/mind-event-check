@@ -1,0 +1,98 @@
+{
+  "type": "record",
+  "name": "PaymentAuthorized",
+  "namespace": "com.mapfre.gymusers.events.pagos",
+  "doc": "Payload del evento PaymentAuthorized (EVT-003) que materializa REQ-049. Los cuatro primeros campos (event_id, event_type, timestamp, correlation_id) son el sobre canónico definido en sources/schemas/common/event_envelope.avsc.",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "UUID que identifica de forma única el evento de dominio emitido (RN REQ-049). Obligatorio."
+    },
+    {
+      "name": "event_type",
+      "type": "string",
+      "doc": "Tipo canónico del evento. Valor fijo: payment.authorized. Obligatorio."
+    },
+    {
+      "name": "timestamp",
+      "type": "string",
+      "doc": "Instante de emisión del evento en ISO-8601 UTC con sufijo Z. Obligatorio."
+    },
+    {
+      "name": "correlation_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "UUID de correlación del cobro, propagado a reintentos, ledger y reembolsos. Obligatorio."
+    },
+    {
+      "name": "user_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "Usuario asociado al pago."
+    },
+    {
+      "name": "transaction_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "Identificador de la transacción local (payment_transactions.transaction_id)."
+    },
+    {
+      "name": "invoice_id",
+      "type": ["null", { "type": "string", "logicalType": "uuid" }],
+      "default": null,
+      "doc": "Factura cobrada, si ya existe."
+    },
+    {
+      "name": "gateway_id",
+      "type": "string",
+      "doc": "Identificador de la transacción en el gateway."
+    },
+    {
+      "name": "gateway_name",
+      "type": {
+        "type": "enum",
+        "name": "GatewayName",
+        "symbols": ["STRIPE", "REDSYS", "ADYEN", "PAYPAL", "BANK"]
+      },
+      "doc": "Proveedor que autoriza el cobro."
+    },
+    {
+      "name": "payment_method",
+      "type": {
+        "type": "enum",
+        "name": "PaymentMethod",
+        "symbols": ["CARD", "PAYPAL", "BANK_TRANSFER"]
+      },
+      "doc": "Método de pago empleado en la autorización."
+    },
+    {
+      "name": "subscription_mode",
+      "type": {
+        "type": "enum",
+        "name": "SubscriptionMode",
+        "symbols": ["MONTHLY", "QUARTERLY", "ANNUAL"]
+      },
+      "doc": "Modalidad de suscripción asociada al cobro."
+    },
+    {
+      "name": "amount_cents",
+      "type": "int",
+      "doc": "Importe en céntimos, entero positivo."
+    },
+    {
+      "name": "currency",
+      "type": "string",
+      "doc": "Divisa ISO-4217 de 3 caracteres, EUR."
+    },
+    {
+      "name": "cardholder_name",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Último valor capturado del titular de la tarjeta."
+    },
+    {
+      "name": "last_four_digits",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "EXACTAMENTE los 4 últimos dígitos de la tarjeta. PROHIBIDO el PAN completo, el CVV y el token (RN REQ-049)."
+    }
+  ]
+}

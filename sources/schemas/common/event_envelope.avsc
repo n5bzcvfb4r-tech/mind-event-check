@@ -1,0 +1,28 @@
+{
+  "type": "record",
+  "name": "EventEnvelope",
+  "namespace": "com.mapfre.gymusers.events.common",
+  "doc": "Sobre canónico obligatorio de todo evento de dominio de GymUsers. RN de REQ-049: event_id identifica de forma única un evento de dominio emitido.",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "UUID que identifica de forma única el evento de dominio emitido (RN REQ-049). Obligatorio."
+    },
+    {
+      "name": "event_type",
+      "type": "string",
+      "doc": "Nombre canónico del tipo de evento en minúsculas y puntos, p. ej. payment.authorized. Obligatorio."
+    },
+    {
+      "name": "timestamp",
+      "type": "string",
+      "doc": "Instante de emisión del evento en ISO-8601 UTC con sufijo Z, p. ej. 2026-10-26T10:35:00.000Z. Obligatorio."
+    },
+    {
+      "name": "correlation_id",
+      "type": { "type": "string", "logicalType": "uuid" },
+      "doc": "UUID de correlación propagado a reintentos, ledger y reembolsos. Obligatorio."
+    }
+  ]
+}
