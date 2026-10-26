@@ -42,7 +42,7 @@
       { "field": "event_type", "type": "string", "enum": ["payment.processed"] },
       { "field": "status", "type": "string", "enum": ["AUTHORIZED", "REJECTED"] },
       { "field": "currency", "type": "string", "length": 3 },
-      { "field": "amount", "type": "string", "pattern": "^[0-9]+\\.[0-9]{2}$" }
+      { "field": "amount", "type": "string", "pattern": "^(0\\.(0[1-9]|[1-9][0-9])|[1-9][0-9]*\\.[0-9]{2})$" }
     ],
     "example": {
       "event_id": "5d2a7c84-6b31-4e29-9f0c-8a71b3e4d5c6",
