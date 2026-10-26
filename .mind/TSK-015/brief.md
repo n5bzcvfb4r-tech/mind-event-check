@@ -1442,3 +1442,6 @@ NO se levanta ningún servicio de respaldo para esta tarea: verifica con tests u
 Limitaciones declaradas:
 - La tecnología `AsyncAPI` (capa `messaging`) no está en el catálogo de servicios de entorno: no hay contenedor equivalente para respaldar los eventos de `TSK-008`.
 - La tecnología `AsyncAPI` (capa `messaging`) no está en el catálogo de servicios de entorno: no hay contenedor equivalente para respaldar los eventos de `TSK-014`.
+
+## REWORK — feedback del revisor (atiéndelo TODO)
+- (mind-platform) MIND (plataforma): este PR tiene **conflictos de merge** con `main` (`mergeable_state=dirty`). Suele pasar al mergear otro PR en paralelo que tocó ficheros compartidos (routers, `__init__`, deps…). Haz rebase o merge de `main` en tu rama, resuelve los conflictos sin cambiar el alcance de la tarea, deja build/tests verdes y vuelve a empujar. Preferible mergear PRs en orden del DAG (uno a uno) para reducir este caso.
