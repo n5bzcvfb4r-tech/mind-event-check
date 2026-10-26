@@ -1,0 +1,13 @@
+{
+  "event_id": "7f1c2a60-3b4d-4e2f-9a11-5c6d7e8f9a01",
+  "event_type": "subscription.cancelled",
+  "timestamp": "2026-03-15T10:12:00.000Z",
+  "correlation_id": "2b9d4e71-6c5a-4f38-8d20-1e3f5a7b9c02",
+  "subscription_id": "c3a81f52-9d47-4b6e-a1f0-8e2d4c6b0a03",
+  "user_id": "5d7e9b13-4a62-4c85-b0d9-7f1a3e5c2b04",
+  "subscription_status": "ACTIVE",
+  "cancelled_at": "2026-03-15T10:12:00.000Z",
+  "cancellation_id": "9e0f1a24-8b73-4d56-9c2e-6a4b8d0f1e05",
+  "close_reason": "USER_CANCELLED",
+  "billing_period_start": "2026-03-01"
+}
