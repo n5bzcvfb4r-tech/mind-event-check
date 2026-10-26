@@ -1,0 +1,34 @@
+{
+  "component": "ARC-031",
+  "name": "suscripciones-bajas-pubsub",
+  "description": "Mapa pub/sub del canal suscripciones.bajas.confirmada.v1. ARC-031 (MOD-002) publica SubscriptionCancelled desde el outbox transaccional event_outbox tras el commit de la baja; ARC-033 (Cobros y recobro) lo consume y cierra el ciclo de impago con close_reason USER_CANCELLED (AC-BAJ-06, REQ-126).",
+  "channel": "suscripciones.bajas.confirmada.v1",
+  "role": "producer-consumer",
+  "events": [
+    {
+      "event_code": "EVT-011",
+      "name": "SubscriptionCancelled",
+      "topic": "suscripciones.bajas.confirmada.v1",
+      "operation": "publish",
+      "component": "ARC-031",
+      "publish_after_commit": true,
+      "outbox": {
+        "table": "event_outbox",
+        "retry_from_outbox": true,
+        "rollback_on_publish_failure": false
+      }
+    },
+    {
+      "event_code": "EVT-011",
+      "name": "SubscriptionCancelled",
+      "topic": "suscripciones.bajas.confirmada.v1",
+      "operation": "subscribe",
+      "component": "ARC-033",
+      "close_reason": "USER_CANCELLED"
+    }
+  ],
+  "owner": { "team": "ARC-023", "contact": "arquitectura.eventos@mapfre.com" },
+  "payload_constraints": {
+    "forbidden_field_names": ["pan", "card_number", "cvv", "cvc", "token", "card_token", "access_token", "iban", "bank_account_number"]
+  }
+}
