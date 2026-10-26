@@ -87,43 +87,74 @@
           },
           "outbox": {
             "type": "object",
-            "description": "Persistencia transaccional del evento en la tabla de outbox y política de reentrega del relay cuando el consumidor no está disponible (REQ-038).",
-            "additionalProperties": false,
-            "required": [
-              "table",
-              "max_attempts",
-              "attempt_interval_seconds",
-              "escalation_target"
-            ],
-            "properties": {
-              "table": {
-                "type": "string",
-                "description": "Nombre físico de la tabla de outbox (T.5: event_outbox).",
-                "pattern": "^[a-z][a-z0-9_]*$"
+            "description": "Outbox transaccional del evento. Admite exactamente una de estas dos formas: la forma de RELAY DE OUTBOX (table, max_attempts, attempt_interval_seconds, escalation_target), que declara la persistencia transaccional del evento y la política de reentrega del relay cuando el consumidor no está disponible (REQ-038); y la forma de PUBLICACIÓN DESDE OUTBOX (table, retry_from_outbox, rollback_on_publish_failure), que declara la tabla de la que se lee el evento al publicarlo y la política ante un fallo de publicación.",
+            "oneOf": [
+              {
+                "type": "object",
+                "description": "Persistencia transaccional del evento en la tabla de outbox y política de reentrega del relay cuando el consumidor no está disponible (REQ-038).",
+                "additionalProperties": false,
+                "required": [
+                  "table",
+                  "max_attempts",
+                  "attempt_interval_seconds",
+                  "escalation_target"
+                ],
+                "properties": {
+                  "table": {
+                    "type": "string",
+                    "description": "Nombre físico de la tabla de outbox (T.5: event_outbox).",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  },
+                  "max_attempts": {
+                    "type": "integer",
+                    "description": "Intentos de entrega del relay antes de escalar (RN REQ-038: como máximo 10).",
+                    "minimum": 1,
+                    "maximum": 10
+                  },
+                  "attempt_interval_seconds": {
+                    "type": "number",
+                    "description": "Intervalo fijo entre intentos del relay en segundos (REQ-038: cada 30 s).",
+                    "exclusiveMinimum": 0
+                  },
+                  "escalation_target": {
+                    "type": "string",
+                    "description": "Destinatario del escalado cuando se agotan los intentos.",
+                    "enum": [
+                      "ADMIN"
+                    ]
+                  },
+                  "persist_until_delivered": {
+                    "type": "boolean",
+                    "description": "El evento permanece en event_outbox hasta que se confirma la entrega."
+                  }
+                }
               },
-              "max_attempts": {
-                "type": "integer",
-                "description": "Intentos de entrega del relay antes de escalar (RN REQ-038: como máximo 10).",
-                "minimum": 1,
-                "maximum": 10
-              },
-              "attempt_interval_seconds": {
-                "type": "number",
-                "description": "Intervalo fijo entre intentos del relay en segundos (REQ-038: cada 30 s).",
-                "exclusiveMinimum": 0
-              },
-              "escalation_target": {
-                "type": "string",
-                "description": "Destinatario del escalado cuando se agotan los intentos.",
-                "enum": [
-                  "ADMIN"
-                ]
-              },
-              "persist_until_delivered": {
-                "type": "boolean",
-                "description": "El evento permanece en event_outbox hasta que se confirma la entrega."
+              {
+                "type": "object",
+                "description": "Publicación mediante outbox transaccional: tabla de la que se lee el evento y política ante un fallo de publicación.",
+                "additionalProperties": false,
+                "required": [
+                  "table",
+                  "retry_from_outbox",
+                  "rollback_on_publish_failure"
+                ],
+                "properties": {
+                  "table": {
+                    "type": "string",
+                    "description": "Tabla de outbox transaccional desde la que se publica el evento. T.5: event_outbox.",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  },
+                  "retry_from_outbox": {
+                    "type": "boolean",
+                    "description": "Si es true, cuando la publicación falla el evento se reintenta desde el outbox hasta entregarse."
+                  },
+                  "rollback_on_publish_failure": {
+                    "type": "boolean",
+                    "description": "AC-BAJ-06: con false, un fallo de publicación NO revierte la operación de negocio ya confirmada (la baja permanece registrada y solo se reintenta el envío)."
+                  }
+                }
               }
-            }
+            ]
           },
           "max_events_per_invoice": {
             "type": "integer",
@@ -139,31 +170,6 @@
             "type": "boolean",
             "description": "Si es true, el evento solo se publica TRAS el commit de la transacción que lo origina (patrón outbox transaccional). AC-BAJ-06: SubscriptionCancelled se publica después de confirmar la baja, nunca dentro de la transacción."
           },
-          "outbox": {
-            "type": "object",
-            "description": "Publicación mediante outbox transaccional: tabla de la que se lee el evento y política ante un fallo de publicación.",
-            "additionalProperties": false,
-            "required": [
-              "table",
-              "retry_from_outbox",
-              "rollback_on_publish_failure"
-            ],
-            "properties": {
-              "table": {
-                "type": "string",
-                "description": "Tabla de outbox transaccional desde la que se publica el evento. T.5: event_outbox.",
-                "pattern": "^[a-z][a-z0-9_]*$"
-              },
-              "retry_from_outbox": {
-                "type": "boolean",
-                "description": "Si es true, cuando la publicación falla el evento se reintenta desde el outbox hasta entregarse."
-              },
-              "rollback_on_publish_failure": {
-                "type": "boolean",
-                "description": "AC-BAJ-06: con false, un fallo de publicación NO revierte la operación de negocio ya confirmada (la baja permanece registrada y solo se reintenta el envío)."
-              }
-            }
-          },
           "close_reason": {
             "type": "string",
             "description": "Motivo de cierre que el consumidor aplica al recibir el evento (dunning_cycles.close_reason). REQ-126: USER_CANCELLED es el motivo que impide abrir caso de aviso.",
@@ -178,6 +184,35 @@
               "type": "string",
               "pattern": "^[a-z][a-z0-9_]*$"
             }
+          },
+          "match_field": {
+            "type": "string",
+            "description": "Campo del payload que debe COINCIDIR con el valor registrado en la orden para que el resultado se aplique (AC-DEV-08): un resultado cuyo match_field no coincide con el refund_request_id guardado no se aplica y solo queda registrado.",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "final_state": {
+            "type": "string",
+            "description": "Estado final de negocio al que lleva este resultado. Valores del enum físico de T.5 subscription_cancellations.refund_status.",
+            "enum": [
+              "REEMBOLSADO",
+              "REEMBOLSO_FALLIDO"
+            ]
+          },
+          "final_state_immutable": {
+            "type": "boolean",
+            "description": "AC-DEV-08: con true, una vez alcanzado el estado final NINGUNA entrega posterior (duplicada, tardía o con match_field distinto) lo reabre ni lo cambia; la entrega se descarta y queda registrada."
+          },
+          "failure_code_field": {
+            "type": "string",
+            "description": "Campo del payload del que se toma el código canónico de fallo que se guarda al pasar al estado final fallido (T.5 subscription_cancellations.refund_failure_code).",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "on_mismatch": {
+            "type": "string",
+            "description": "Efecto de una entrega cuyo match_field no coincide con el valor registrado en la orden (AC-DEV-08): se descarta sin cambiar el estado y queda registrada.",
+            "enum": [
+              "discard_and_record"
+            ]
           },
           "trigger_source": {
             "type": "string",
@@ -196,9 +231,10 @@
           },
           "on_duplicate": {
             "type": "string",
-            "description": "Efecto de una entrega repetida sobre una factura que ya tiene caso OPEN (AC-IMP-04): el evento se anota y los hitos NO se replanifican. Única semántica declarada por arquitectura.",
+            "description": "Efecto de una entrega repetida. Con annotate_only, sobre una factura que ya tiene caso OPEN (AC-IMP-04): el evento se anota y los hitos NO se replanifican. Con discard_and_record (AC-DEV-08): la entrega repetida se descarta sin producir ningún efecto sobre el estado ya alcanzado y queda registrada. Únicas semánticas declaradas por arquitectura.",
             "enum": [
-              "annotate_only"
+              "annotate_only",
+              "discard_and_record"
             ]
           },
           "receives_payment_data": {
@@ -247,7 +283,7 @@
     },
     "delivery": {
       "type": "object",
-      "description": "Política de entrega que el componente productor aplica a TODOS los canales que declara: reintentos, backoff y timeout (REQ-049).",
+      "description": "Política de entrega que el componente aplica a TODOS los canales que declara y, además, a la entrega de una orden al módulo destino: reintentos, backoff, timeout y destinatario del escalado cuando se agotan los reintentos (REQ-049, AC-DEV-09).",
       "additionalProperties": false,
       "required": [
         "retries",
@@ -295,6 +331,13 @@
           "description": "Timeout de entrega en segundos (mayor que 0 y como máximo 60).",
           "exclusiveMinimum": 0,
           "maximum": 60
+        },
+        "escalation_target": {
+          "type": "string",
+          "enum": [
+            "ADMIN"
+          ],
+          "description": "Destinatario de la alerta cuando se agotan los reintentos de entrega (AC-DEV-09)."
         }
       }
     }

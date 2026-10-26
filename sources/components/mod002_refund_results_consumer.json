@@ -1,0 +1,44 @@
+{
+  "component": "ARC-031",
+  "name": "facturacion-resultados-reembolso",
+  "description": "Módulo de facturación (MOD-002): consume los resultados de reembolso que publica MOD-003 (ARC-034) para cerrar la baja en subscription_cancellations. RefundCompleted lleva a REEMBOLSADO y RefundFailed a REEMBOLSO_FALLIDO con failure_code; son estados finales inmutables: un mensaje duplicado, tardío o con refund_request_id distinto al registrado se descarta y queda registrado (AC-DEV-08). Reutiliza los canales y esquemas de EVT-012 y EVT-013 sin redeclararlos.",
+  "channel": "pagos.reembolsos.completado.v1",
+  "role": "consumer",
+  "events": [
+    {
+      "event_code": "EVT-012",
+      "name": "RefundCompleted",
+      "topic": "pagos.reembolsos.completado.v1",
+      "operation": "subscribe",
+      "idempotency_key": ["cancellation_id"],
+      "match_field": "refund_request_id",
+      "final_state": "REEMBOLSADO",
+      "final_state_immutable": true,
+      "on_duplicate": "discard_and_record",
+      "on_mismatch": "discard_and_record"
+    },
+    {
+      "event_code": "EVT-013",
+      "name": "RefundFailed",
+      "topic": "pagos.reembolsos.fallido.v1",
+      "operation": "subscribe",
+      "idempotency_key": ["cancellation_id"],
+      "match_field": "refund_request_id",
+      "final_state": "REEMBOLSO_FALLIDO",
+      "failure_code_field": "failure_code",
+      "final_state_immutable": true,
+      "on_duplicate": "discard_and_record",
+      "on_mismatch": "discard_and_record"
+    }
+  ],
+  "owner": { "team": "ARC-023", "contact": "arquitectura.eventos@mapfre.com" },
+  "delivery": {
+    "retries": 4,
+    "backoff": { "strategy": "exponential", "intervals_seconds": [60, 300, 900, 3600] },
+    "timeout_s": 30,
+    "escalation_target": "ADMIN"
+  },
+  "payload_constraints": {
+    "forbidden_field_names": ["pan", "card_number", "cvv", "cvc", "token", "card_token", "access_token", "iban", "bank_account_number"]
+  }
+}
