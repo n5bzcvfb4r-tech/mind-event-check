@@ -1,0 +1,76 @@
+{
+  "component": "ARC-035",
+  "name": "mod005-registro-transacciones",
+  "description": "Módulo de registro de transacciones (MOD-005): consume PaymentAuthorized, PaymentFailed y PaymentProcessed y proyecta cada operación económica en un único asiento de transaction_ledger (REQ-069). Un evento sin user_id o sin importe no llega al ledger: lo publica en el canal de cuarentena con alerta a ADMIN (AC-TRX-03).",
+  "channel": "gymusers.ledger.dead-letter.v1",
+  "role": "producer-consumer",
+  "delivery": {
+    "retries": 3,
+    "backoff": { "strategy": "exponential", "intervals_seconds": [1, 2, 4] },
+    "timeout_s": 5
+  },
+  "idempotency": {
+    "table": "transaction_ledger",
+    "key_fields": ["payment_method", "provider_transaction_id", "transaction_type"],
+    "constraint": "unique",
+    "on_conflict": "update"
+  },
+  "events": [
+    {
+      "event_code": "EVT-003",
+      "name": "PaymentAuthorized",
+      "topic": "pagos.cobros.autorizado.v1",
+      "operation": "subscribe",
+      "outbox": {
+        "table": "event_outbox",
+        "max_attempts": 10,
+        "attempt_interval_seconds": 30,
+        "escalation_target": "ADMIN",
+        "persist_until_delivered": true
+      }
+    },
+    {
+      "event_code": "EVT-004",
+      "name": "PaymentFailed",
+      "topic": "pagos.cobros.fallido.v1",
+      "operation": "subscribe",
+      "outbox": {
+        "table": "event_outbox",
+        "max_attempts": 10,
+        "attempt_interval_seconds": 30,
+        "escalation_target": "ADMIN",
+        "persist_until_delivered": true
+      }
+    },
+    {
+      "event_code": "EVT-005",
+      "name": "PaymentProcessed",
+      "topic": "pagos.cobros.procesado.v1",
+      "operation": "subscribe",
+      "outbox": {
+        "table": "event_outbox",
+        "max_attempts": 10,
+        "attempt_interval_seconds": 30,
+        "escalation_target": "ADMIN",
+        "persist_until_delivered": true
+      }
+    },
+    {
+      "event_code": "EVT-014",
+      "name": "LedgerDeadLetter",
+      "topic": "gymusers.ledger.dead-letter.v1",
+      "operation": "publish",
+      "outbox": {
+        "table": "event_outbox",
+        "max_attempts": 10,
+        "attempt_interval_seconds": 30,
+        "escalation_target": "ADMIN",
+        "persist_until_delivered": true
+      }
+    }
+  ],
+  "owner": { "team": "ARC-023", "contact": "arquitectura.eventos@mapfre.com" },
+  "payload_constraints": {
+    "forbidden_field_names": ["pan", "card_number", "cvv", "cvc", "token", "card_token", "access_token", "iban", "bank_account_number"]
+  }
+}

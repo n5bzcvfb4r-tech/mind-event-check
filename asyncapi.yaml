@@ -146,6 +146,16 @@ channels:
       operationId: EVT-013
     subscribe:
       message: *id013
+  gymusers.ledger.dead-letter.v1:
+    description: 'LedgerDeadLetter · productor: ARC-035 → consumidor: ARC-020'
+    x-mind-transport: internal
+    x-mind-audience: internal
+    publish:
+      message: &id014
+        $ref: '#/components/messages/LedgerDeadLetter'
+      operationId: EVT-014
+    subscribe:
+      message: *id014
 components:
   messages:
     BankStatementDeposited:
@@ -173,6 +183,14 @@ components:
         type: object
         description: Payload de InvoiceUnpaid
         x-mind-placeholder: true
+    LedgerDeadLetter:
+      name: LedgerDeadLetter
+      summary: event_id del evento original en cuarentena, original_topic de procedencia,
+        raw_payload saneado (sin PAN ni CVV), reject_reason (MISSING_USER_ID/MISSING_AMOUNT/INVALID_STATE_TRANSITION),
+        quarantined_at y alert_target ADMIN
+      payload:
+        type: object
+        description: Payload de LedgerDeadLetter
     PaymentAuthorized:
       name: PaymentAuthorized
       summary: event_id, correlation_id, user_id, transaction_id, invoice_id, gateway_name,
